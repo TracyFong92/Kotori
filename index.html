@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Kotori 日語學園">
-<title>Kotori 日本語學園 2.7.1</title>
+<title>Kotori 日本語學園 2.7.2</title>
 <style>
 :root{--pink:#f4e5e9;--rose:#bd8da2;--ink:#624c5b;--cream:#fbf7f0;--sage:#8eae98;--muted:#8d7d83;--line:#eadfe2;--white:#fff}
 *{box-sizing:border-box}body{margin:0;background:#f8f5f2;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}
@@ -52,12 +52,13 @@ footer{text-align:center;color:#ad9ca3;font-size:10px;padding:8px 16px 18px}
 
 /* Kotori 2.7.1: cleaner study screens and fixed quiz layout */
 .app{position:relative}
-.page-back{position:absolute;top:calc(8px + env(safe-area-inset-top));left:12px;z-index:8;width:38px;height:38px;border-radius:50%;background:#fff;color:var(--ink);border:1px solid var(--line);font-size:25px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px #624c5b12}
+.page-back{position:absolute;top:calc(62px + env(safe-area-inset-top));left:12px;z-index:8;width:38px;height:38px;border-radius:50%;background:#fff;color:var(--ink);border:1px solid var(--line);font-size:25px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px #624c5b12}
 body.quiz-mode{overflow:hidden;height:100dvh}
 body.quiz-mode .app{height:100dvh;min-height:0;overflow:hidden}
-body.quiz-mode header,body.quiz-mode .nav,body.quiz-mode footer{display:none}
-body.quiz-mode main{height:100dvh;min-height:0;overflow:hidden;padding:calc(54px + env(safe-area-inset-top)) 16px 14px;display:flex;flex-direction:column;justify-content:flex-start;gap:5px}
-body.quiz-mode .page-back{top:calc(8px + env(safe-area-inset-top))}
+body.quiz-mode .nav,body.quiz-mode footer{display:none}
+body.quiz-mode header.compact-header{display:flex}
+body.quiz-mode main{height:calc(100dvh - 58px - env(safe-area-inset-top));min-height:0;overflow:hidden;padding:50px 16px 14px;display:flex;flex-direction:column;justify-content:flex-start;gap:5px}
+body.quiz-mode .page-back{top:calc(62px + env(safe-area-inset-top))}
 body.quiz-mode main .h1{font-size:20px;margin:2px 0 5px}
 body.quiz-mode main .muted{font-size:12px;line-height:1.35}
 body.quiz-mode main .panel{margin:7px 0;padding:13px}
@@ -74,14 +75,44 @@ body.quiz-mode main .feedback{padding:9px;margin-top:5px;font-size:12px}
 .grammar-nav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .grammar-nav .btn{margin-top:0}
 
+
+/* Kotori 2.7.2: compact universal status bar and consistent navigation */
+header.compact-header{padding:calc(9px + env(safe-area-inset-top)) 16px 9px;min-height:58px;gap:12px;background:#fbf3f4}
+.level-progress{display:grid;grid-template-columns:auto minmax(65px,1fr) auto;align-items:center;gap:9px;flex:1;min-width:0}
+.level-label{font-size:12px;font-weight:800;white-space:nowrap;color:#705568}
+.xp-track{height:9px;border-radius:20px;background:#eadfe4;overflow:hidden;min-width:45px}
+.xp-track i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#9dbda3,#77a486);transition:width .25s}
+.xp-count{font-size:10px;color:#887681;white-space:nowrap;font-variant-numeric:tabular-nums}
+.coin-pill{background:#fff;border:1px solid #eee2e5;border-radius:18px;padding:7px 11px;font-size:12px;white-space:nowrap}
+.brand,.sub,.mascot{display:none!important}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%;margin-top:10px}
+.nav-pair .btn{margin:0;min-width:0}
+.grammar-pattern-box{background:#f8edf2;border:1px solid #e8cbd8;border-radius:16px;padding:15px 12px;margin:12px 0}
+.grammar-pattern{font-size:30px!important;line-height:1.45;margin:5px 0 10px!important;color:#604456;letter-spacing:.3px}
+.grammar-token{display:inline-block;border-radius:7px;padding:1px 5px;margin:0 1px}
+.grammar-token.noun{background:#f8dce8;color:#a34f76}
+.grammar-token.particle{background:#dceee0;color:#477a58}
+.grammar-token.ending{background:#e8e0f4;color:#705b9a}
+.grammar-legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.grammar-legend .tag{font-size:10px}
+.grammar-example{background:#eef5f8;border:1px solid #d4e4eb;border-radius:15px;padding:15px;margin-top:14px}
+.grammar-example .eyebrow{color:#648494}
+.grammar-example .jp{color:#345f70;font-size:23px!important;margin:8px 0}
+.grammar-example .muted{text-align:center;color:#68818b}
+.pinned-list{display:grid;gap:8px;margin-top:12px}
+.pinned-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.pinned-item .pin-text{flex:1;min-width:0}
+.pinned-item .pin-text b{display:block}
+.pinned-item .pin-text small{color:var(--muted);font-size:11px}
+.pin-remove{background:#f7edf0;color:#9d657e;border-radius:9px;padding:7px 9px;font-size:11px}
+
 </style>
 </head>
 <body>
 <div class="app">
-<header>
- <div><div class="brand">ことり日本語学園</div><div class="sub">KOTORI JAPANESE ACADEMY</div>
- <div class="stats"><span class="pill" id="level">🌱 Lv.1 初心者</span><span class="pill">⭐ <b id="xp">0</b> XP</span><span class="pill">🪙 <b id="coins">0</b></span></div></div>
- <div class="mascot" aria-label="Kotori 小鳥">🐤</div>
+<header class="compact-header">
+ <div class="level-progress"><div class="level-label" id="level">Lv.1</div><div class="xp-track"><i id="xpFill" style="width:0%"></i></div><div class="xp-count"><b id="xpCurrent">0</b>/<span id="xpGoal">100</span> XP</div></div>
+ <div class="coin-pill">🪙 <b id="coins">0</b></div>
 </header>
 <main id="main"></main>
 <nav class="nav">
@@ -91,7 +122,7 @@ body.quiz-mode main .feedback{padding:9px;margin-top:5px;font-size:12px}
  <button data-page="comic"><b>📚</b>漫畫</button>
  <button data-page="profile"><b>♡</b>我的</button>
 </nav>
-<footer>Kotori 2.7 · Adventure UI · 每天一點點，日文慢慢進步。🌸</footer>
+<footer>Kotori 2.7.2 · Adventure UI · 每天一點點，日文慢慢進步。🌸</footer>
 </div>
 <script>
 const KEY='kotori-jp-v1';
@@ -135,12 +166,14 @@ function toggleKanaBookmark(mode,kana,reading,meaning){const id='kana:'+mode+':'
 function reviewDue(){return state.reviewItems.filter(x=>x.dueAt<=Date.now())}
 function revealReview(){reviewRevealed=true;renderReview(document.getElementById('main'))}
 function reviewMark(id,known){const item=state.reviewItems.find(x=>x.id===id);if(!item)return;item.reps=(item.reps||0)+1;item.interval=known?Math.min(30,Math.max(3,(item.interval||1)*2)):1;item.dueAt=Date.now()+item.interval*86400000;reviewRevealed=false;save();renderReview(document.getElementById('main'))}
+function removePinnedItem(id){state.reviewItems=state.reviewItems.filter(x=>x.id!==id);save();renderReview(document.getElementById('main'));}
 function renderReview(m){
  const due=reviewDue(); const all=state.reviewItems.length;
- if(!due.length){m.innerHTML=`<div class="eyebrow">SPACED REVIEW</div><div class="h1">記憶補給站 🧠</div><div class="panel"><div style="font-size:40px;text-align:center">🌱</div><b>今天暫時沒有到期的複習卡</b><div class="muted">你已收藏 ${all} 張內容。學習時遇到不熟悉的假名或單字，可以按「加入記憶補給站」。</div></div><button class="btn secondary" onclick="markDaily('review')">完成今日複習任務 +5 XP</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;return;}
+ const pinned=state.reviewItems.map(item=>`<div class="pinned-item"><div class="pin-text"><b>${item.front}</b><small>${item.reading||''}${item.meaning?' · '+item.meaning:''}</small></div><button class="pin-remove" onclick='removePinnedItem(${JSON.stringify(item.id)})'>移除</button></div>`).join('');
+ if(!due.length){m.innerHTML=`<div class="eyebrow">SAVED WORDS · SPACED REVIEW</div><div class="h1">我的收藏／釘選內容 🔖</div><div class="panel"><div style="font-size:34px;text-align:center">🌱</div><b>你已收藏 ${all} 張卡片</b><div class="muted">你在五十音花園按下書籤，或在單字卡按下加入複習後，內容就會保存在這裏。到期的卡片會自動安排複習。</div></div><div class="section-title">已收藏的假名及單字</div>${all?pinned:'<div class="panel muted">目前還沒有收藏內容。到五十音花園按假名卡右上角的書籤，或在單字卡按「加入複習」。</div>'}<button class="btn secondary" onclick="setPage('vocabPage')">返回單字森林</button><button class="btn secondary" onclick="setPage('kanaPage')">前往五十音花園</button>`;return;}
  const idx=Math.min(state.reviewIndex,due.length-1),item=due[idx];
  reviewRevealed=false;
- m.innerHTML=`<div class="eyebrow">SPACED REVIEW · ${idx+1} / ${due.length}</div><div class="h1">記憶補給站 🧠</div><div class="muted">先看日文卡片，在心中回想讀音和意思，再揭曉答案。</div><div class="panel" style="text-align:center"><div class="jp">${item.front}</div>${reviewRevealed?`<div class="reading">${item.reading||''}</div><div class="muted">${item.meaning||''}</div>`:'<div class="muted">先想一想，再按下方按鈕揭曉答案</div>'}</div><div class="muted">目前有 ${all} 張收藏卡；今日到期 ${due.length} 張。</div>${reviewRevealed?`<button class="btn secondary" onclick="reviewMark('${item.id}',false)">還不熟悉 · 明天再複習</button><button class="btn" onclick="reviewMark('${item.id}',true)">已經記得 · 延後複習</button>`:`<button class="btn" onclick="revealReview()">顯示答案</button>`}<button class="btn secondary" onclick="markDaily('review')">完成今日複習任務 +5 XP</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
+ m.innerHTML=`<div class="eyebrow">SPACED REVIEW · ${idx+1} / ${due.length}</div><div class="h1">記憶補給站 🧠</div><div class="muted">先看日文卡片，在心中回想讀音和意思，再揭曉答案。</div><div class="panel" style="text-align:center"><div class="jp">${item.front}</div>${reviewRevealed?`<div class="reading">${item.reading||''}</div><div class="muted">${item.meaning||''}</div>`:'<div class="muted">先想一想，再按下方按鈕揭曉答案</div>'}</div><div class="muted">目前有 ${all} 張收藏卡；今日到期 ${due.length} 張。</div>${reviewRevealed?`<button class="btn secondary" onclick="reviewMark('${item.id}',false)">還不熟悉 · 明天再複習</button><button class="btn" onclick="reviewMark('${item.id}',true)">已經記得 · 延後複習</button>`:`<button class="btn" onclick="revealReview()">顯示答案</button>`}<div class="section-title">全部已收藏內容</div><div class="pinned-list">${pinned}</div><button class="btn secondary" onclick="markDaily('review')">完成今日複習任務 +5 XP</button><button class="btn secondary" onclick="setPage('vocabPage')">返回單字森林</button>`;
 }
 const questions=[
  {jp:'こんにちは',reading:'こんにちは',meaning:'你好／午安',opts:['早上好','你好','晚安','謝謝'],answer:1,why:'こんにちは 是白天見面時常用的問候語。'},
@@ -197,7 +230,7 @@ const comics=[
  ['日本語は難しいですか？','日文很難嗎？','難しい（むずかしい）是「困難」的意思。']
 ];
 function save(){localStorage.setItem(KEY,JSON.stringify(state));updateStats()}
-function updateStats(){document.getElementById('xp').textContent=state.xp;document.getElementById('coins').textContent=state.coins;document.getElementById('level').textContent='🌱 Lv.'+(1+Math.floor(state.xp/100))+' 初心者'}
+function updateStats(){const level=1+Math.floor(state.xp/100),within=state.xp%100;document.getElementById('coins').textContent=state.coins;document.getElementById('level').textContent='Lv.'+level;const cur=document.getElementById('xpCurrent'),goal=document.getElementById('xpGoal'),fill=document.getElementById('xpFill');if(cur)cur.textContent=within;if(goal)goal.textContent='100';if(fill)fill.style.width=within+'%'}
 function addReward(id,xp=10,coins=3){if(!state.completed.includes(id)){state.completed.push(id);state.xp+=xp;state.coins+=coins;save()}}
 function isQuizPage(p){return ['lesson','kanaQuiz','vocabQuiz','vocab25Quiz','smartReview'].includes(p);}
 function pageBackTarget(p){return p==='kanaQuiz'?'kanaPage':(['vocabQuiz','vocab25Quiz','smartReview'].includes(p)?'vocabPage':'map')}
@@ -271,8 +304,19 @@ function render(){
  <div class="section-title">今日學習</div><div class="panel muted">已完成 ${state.dailyDone.length} / ${dailyTasks.length} 項每日任務<br>記憶補給站：${state.reviewItems.length} 張收藏卡</div><div class="section-title">你的學習設定</div><div class="panel muted">五十音：大部分認得，持續複習<br>學習模式：遊戲＋故事情節<br>目標：日常溝通、漫畫、動漫、JLPT、聽力及發音<br>漢字：逐步減少中文提示</div>
  <button class="btn secondary" onclick="if(confirm('確定要清除這部裝置上的學習紀錄嗎？')){localStorage.removeItem(KEY);location.reload()}">重設學習紀錄</button>`;
  if(page!=='home'&&page!=='map'){const backTarget=pageBackTarget(page);m.insertAdjacentHTML('afterbegin',`<button class="page-back" aria-label="返回" onclick="setPage('${backTarget}')">‹</button>`);}
+ pairNavigationButtons(m);
  document.body.classList.toggle('quiz-mode',isQuizPage(page));
  updateStats();
+}
+
+function pairNavigationButtons(container){
+ const children=Array.from(container.children);
+ for(let i=0;i<children.length-1;i++){
+  const a=children[i],b=children[i+1];
+  if(a.tagName==='BUTTON'&&b.tagName==='BUTTON'&&/(上一句|上一個|上一頁|上一題)/.test(a.textContent)&&/(下一句|下一個|下一頁|下一題)/.test(b.textContent)){
+   const wrap=document.createElement('div');wrap.className='nav-pair';a.parentNode.insertBefore(wrap,a);wrap.appendChild(a);wrap.appendChild(b);children.splice(i,2,wrap);
+  }
+ }
 }
 function shuffleArray(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function startKanaQuiz(){
@@ -323,8 +367,8 @@ function renderVocabForest(m){
  const stats=Object.values(state.vocab25Stats),mastered=stats.filter(x=>x&&x.correct>=3).length;
  const words=allKotoriWords();
  const smartDone=words.filter(w=>smartStat(w).attempts>0).length;
- m.innerHTML=`<div class="eyebrow">VOCABULARY FOREST · VERSION 2.7</div><div class="h1">單字森林 🌳</div>
- <div class="forest-hero"><div class="forest-hero-top"><h2>今日學習挑戰</h2><span class="tag">🐤 Kotori 推薦</span></div><p>由智能複習開始，系統會按你的記憶情況安排單字。</p><button class="forest-action" onclick="setPage('smartReview')"><span class="action-icon">✨</span><span>開始智能複習<small>60 個單字 · 自動調整難度</small></span><span style="margin-left:auto;font-size:20px">›</span></button>
+ m.innerHTML=`<div class="eyebrow">VOCABULARY FOREST · VERSION 2.7.2</div><div class="h1">單字森林 🌳</div>
+ <div class="forest-hero"><div class="forest-hero-top"><h2>今日學習挑戰</h2><span class="tag">🐤 Kotori 推薦</span></div><button class="forest-action" style="background:#a77f93;margin:0 0 10px" onclick="setPage('reviewPage')"><span class="action-icon">🔖</span><span>我的收藏／釘選單字<small>${state.reviewItems.length} 張卡片 · 假名及單字都在這裏</small></span><span style="margin-left:auto;font-size:20px">›</span></button><p>由智能複習開始，系統會按你的記憶情況安排單字。</p><button class="forest-action" onclick="setPage('smartReview')"><span class="action-icon">✨</span><span>開始智能複習<small>60 個單字 · 自動調整難度</small></span><span style="margin-left:auto;font-size:20px">›</span></button>
  <div class="challenge-row"><button class="challenge-mini" onclick="startVocab25Quiz('listen')">🎧 聆聽挑戰<small>10 題 · 聽音辨字</small></button><button class="challenge-mini" onclick="startVocab25Quiz('sentence')">📖 句子挑戰<small>10 題 · 理解例句</small></button></div>
  <div class="progress"><i style="width:${smartDone/60*100}%"></i></div><div class="muted" style="margin-top:6px">已練習 ${smartDone} / 60 個單字</div></div>
  <div class="panel" style="margin-top:10px"><div class="forest-hero-top"><b>🌱 ${stageNames[state.vocab25Stage-1]}</b><span class="tag">第 ${state.vocab25Stage} 區</span></div><div class="muted" style="margin:6px 0 9px">已開放 ${unlocked} / 30 個新單字 · 已掌握 ${mastered} 個</div><div class="progress"><i style="width:${unlocked/30*100}%"></i></div></div>
@@ -491,7 +535,8 @@ function renderSmartMistakes(m){
 
 function renderGrammar(m){
  const i=(state.grammarIndex||0)%grammarCards.length,c=grammarCards[i],done=state.dailyDone.includes('grammar');
- m.innerHTML=`<div class="eyebrow">GRAMMAR ACADEMY · N5</div><div class="h1">文法學院 🏫</div><div class="panel" style="padding:18px 16px"><span class="tag">句型 ${i+1} / ${grammarCards.length}</span><div class="jp grammar-pattern">${c[0]}</div><div class="muted">${c[3]}</div><div class="grammar-example"><div class="eyebrow">例句</div><div class="jp">${c[1]}</div><div class="muted" style="text-align:center">${c[2]}</div></div></div><div class="grammar-nav"><button class="btn secondary" onclick="state.grammarIndex=((state.grammarIndex||0)-1+${grammarCards.length})%${grammarCards.length};save();render()">← 上一句</button><button class="btn" onclick="state.grammarIndex=((state.grammarIndex||0)+1)%${grammarCards.length};save();render()">下一句 →</button></div><button class="btn secondary" ${done?'disabled':''} onclick="markDaily('grammar')">${done?'已完成':'完成'}</button>`;
+ const pattern=c[0].replace(/じゃありません|場所|時間|Vます|です|[ABN]|は|を|で|に/g,t=>{const cls=['A','B','N','場所','時間'].includes(t)?'noun':(['は','を','で','に'].includes(t)?'particle':'ending');return `<span class=\"grammar-token ${cls}\">${t}</span>`});
+ m.innerHTML=`<div class=\"eyebrow\">GRAMMAR ACADEMY · N5</div><div class=\"h1\">文法學院 🏫</div><div class=\"panel\" style=\"padding:16px 14px\"><span class=\"tag\">句型 ${i+1} / ${grammarCards.length}</span><div class=\"grammar-pattern-box\"><div class=\"eyebrow\">句型結構</div><div class=\"jp grammar-pattern\">${pattern}</div><div class=\"grammar-legend\"><span class=\"tag\" style=\"background:#f8dce8;color:#a34f76\">名詞／代詞</span><span class=\"tag\" style=\"background:#dceee0;color:#477a58\">助詞</span><span class=\"tag\" style=\"background:#e8e0f4;color:#705b9a\">句尾／動詞</span></div></div><div class=\"muted\">${c[3]}</div><div class=\"grammar-example\"><div class=\"eyebrow\">例句・實際用法</div><div class=\"jp\">${c[1]}</div><div class=\"muted\">${c[2]}</div></div></div><div class=\"grammar-nav\"><button class=\"btn secondary\" onclick=\"state.grammarIndex=((state.grammarIndex||0)-1+${grammarCards.length})%${grammarCards.length};save();render()\">← 上一句</button><button class=\"btn\" onclick=\"state.grammarIndex=((state.grammarIndex||0)+1)%${grammarCards.length};save();render()\">下一句 →</button></div><button class=\"btn secondary\" ${done?'disabled':''} onclick=\"markDaily('grammar')\">${done?'已完成':'完成'}</button>`;
 }
 function renderLesson(m){
  const q=questions[qIndex];
