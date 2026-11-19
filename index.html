@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Kotori 日語學園">
-<title>Kotori 日本語學園</title>
+<title>Kotori 日本語學園 2.0</title>
 <style>
 :root{--pink:#f4e5e9;--rose:#bd8da2;--ink:#624c5b;--cream:#fbf7f0;--sage:#8eae98;--muted:#8d7d83;--line:#eadfe2;--white:#fff}
 *{box-sizing:border-box}body{margin:0;background:#f8f5f2;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}
@@ -45,18 +45,21 @@ footer{text-align:center;color:#ad9ca3;font-size:10px;padding:8px 16px 18px}
  <button data-page="comic"><b>📚</b>漫畫</button>
  <button data-page="profile"><b>♡</b>我的</button>
 </nav>
-<footer>每天一點點，日文慢慢進步。🌸</footer>
+<footer>Kotori 2.0 · 每天一點點，日文慢慢進步。🌸</footer>
 </div>
 <script>
 const KEY='kotori-jp-v1';
 let state=JSON.parse(localStorage.getItem(KEY)||'{"xp":0,"coins":0,"completed":[],"kanaIndex":0,"comicIndex":0,"storyDone":false}');
-let page='home',qIndex=0,selected='',answered=false,showHint=true,storyChoice=0;
+let page='home',qIndex=0,selected='',answered=false,showHint=true,storyChoice=0,kanaMode='hiragana';
 const questions=[
  {jp:'こんにちは',reading:'こんにちは',meaning:'你好／午安',opts:['早上好','你好','晚安','謝謝'],answer:1,why:'こんにちは 是白天見面時常用的問候語。'},
  {jp:'わたしは学生です。',reading:'わたしは がくせい です。',meaning:'我是學生。',opts:['我是老師。','我是學生。','我是日本人。','我不是學生。'],answer:1,why:'わたし 是「我」，学生（がくせい）是「學生」，です 是禮貌句尾。'},
  {jp:'水を飲みます。',reading:'みずを のみます。',meaning:'喝水。',opts:['吃飯。','喝茶。','喝水。','買水。'],answer:2,why:'水（みず）是水，飲みます（のみます）是喝。'}
 ];
-const kana=[['あ','a','あさ（早上）'],['い','i','いぬ（狗）'],['う','u','うみ（海）'],['え','e','えき（車站）'],['お','o','おに（鬼）'],['か','ka','かさ（雨傘）'],['き','ki','きつね（狐狸）']];
+const hiragana=[['あ','a','あさ（早上）'],['い','i','いぬ（狗）'],['う','u','うみ（海）'],['え','e','えき（車站）'],['お','o','おに（鬼）'],['か','ka','かさ（雨傘）'],['き','ki','きつね（狐狸）'],['く','ku','くつ（鞋）'],['け','ke','けさ（今天早上）'],['こ','ko','こえ（聲音）'],['さ','sa','さくら（櫻花）'],['し','shi','しお（鹽）'],['す','su','すし（壽司）'],['せ','se','せんせい（老師）'],['そ','so','そら（天空）'],['た','ta','たこ（章魚）'],['ち','chi','ちず（地圖）'],['つ','tsu','つき（月亮）'],['て','te','て（手）'],['と','to','とけい（時鐘）'],['な','na','なつ（夏天）'],['に','ni','にく（肉）'],['ぬ','nu','ぬの（布）'],['ね','ne','ねこ（貓）'],['の','no','のみもの（飲品）'],['は','ha','はな（花）'],['ひ','hi','ひと（人）'],['ふ','fu','ふね（船）'],['へ','he','へや（房間）'],['ほ','ho','ほし（星星）'],['ま','ma','まち（城鎮）'],['み','mi','みず（水）'],['む','mu','むし（昆蟲）'],['め','me','め（眼睛）'],['も','mo','もも（桃）'],['や','ya','やま（山）'],['ゆ','yu','ゆき（雪）'],['よ','yo','よる（晚上）'],['ら','ra','らいねん（明年）'],['り','ri','りんご（蘋果）'],['る','ru','さる（猴子）'],['れ','re','れい（例子）'],['ろ','ro','ろく（六）'],['わ','wa','わたし（我）'],['を','o','助詞を'],['ん','n','ほん（書）']];
+const katakana=[['ア','a','アニメ（動畫）'],['イ','i','インク（墨水）'],['ウ','u','ウール（羊毛）'],['エ','e','エア（空氣）'],['オ','o','オレンジ（橙）'],['カ','ka','カメラ（相機）'],['キ','ki','キウイ（奇異果）'],['ク','ku','クラス（班級）'],['ケ','ke','ケーキ（蛋糕）'],['コ','ko','コーヒー（咖啡）'],['サ','sa','サラダ（沙律）'],['シ','shi','シャツ（恤衫）'],['ス','su','スープ（湯）'],['セ','se','セーター（毛衣）'],['ソ','so','ソファ（梳化）'],['タ','ta','タクシー（的士）'],['チ','chi','チーズ（芝士）'],['ツ','tsu','ツアー（旅行團）'],['テ','te','テレビ（電視）'],['ト','to','トマト（番茄）'],['ナ','na','ナイフ（餐刀）'],['ニ','ni','ニュース（新聞）'],['ヌ','nu','カタカナのヌ'],['ネ','ne','ネクタイ（領帶）'],['ノ','no','ノート（筆記簿）'],['ハ','ha','ハンカチ（手帕）'],['ヒ','hi','ヒント（提示）'],['フ','fu','フォーク（叉）'],['ヘ','he','ヘルプ（幫助）'],['ホ','ho','ホテル（酒店）'],['マ','ma','マスク（口罩）'],['ミ','mi','ミルク（牛奶）'],['ム','mu','ムービー（電影）'],['メ','me','メール（電郵）'],['モ','mo','モデル（模特兒）'],['ヤ','ya','ヤギ（山羊）'],['ユ','yu','ユニフォーム（制服）'],['ヨ','yo','ヨーグルト（乳酪）'],['ラ','ra','ラジオ（收音機）'],['リ','ri','リモコン（遙控器）'],['ル','ru','ルール（規則）'],['レ','re','レモン（檸檬）'],['ロ','ro','ロボット（機械人）'],['ワ','wa','ワイン（葡萄汁等語境）'],['ヲ','o','主要作助詞使用'],['ン','n','パン（麵包）']];
+const vocabCards=[['学校','がっこう','學校'],['友達','ともだち','朋友'],['食べます','たべます','吃'],['飲みます','のみます','喝'],['今日','きょう','今天'],['明日','あした','明天'],['駅','えき','車站'],['本','ほん','書'],['猫','ねこ','貓'],['時間','じかん','時間']];
+const grammarCards=[['A は B です','わたしは学生です。','我是學生。','は 標示句子的主題；です 是禮貌句尾。'],['A は B じゃありません','わたしは先生じゃありません。','我不是老師。','じゃありません 用來作禮貌的否定判斷。'],['N を Vます','水を飲みます。','喝水。','を 標示動作的對象。'],['場所 で Vます','学校で勉強します。','在學校讀書。','で 表示動作發生的場所。'],['時間 に Vます','七時に起きます。','七點起床。','に 可標示具體時間點。']];
 const comics=[
  ['こんにちは！わたしはミカです。','你好！我是 Mika。','こんにちは 是日常打招呼的用語。'],
  ['よろしくお願いします！','請多多指教！','初次認識別人時很常用的禮貌說法。'],
@@ -71,7 +74,7 @@ function render(){
  if(page==='home')m.innerHTML=`
  <div class="eyebrow">YOUR DAILY ADVENTURE</div><div class="h1">おかえりなさい！歡迎回來 🌸</div>
  <div class="panel welcome"><div class="bird">🐤</div><div><b>Kotori 說：</b><div class="muted">今日も一緒に日本語を勉強しよう！<br>今天也一起學日文吧！</div></div></div>
- <div class="section-title">今日的學習任務</div><div class="muted">每日目標約 20–30 分鐘，完成一點點就很棒。</div>
+ <div class="section-title">今日的學習任務</div><div class="muted">每日目標約 20–30 分鐘，五十音、單字、文法和故事循序漸進。</div>
  <div class="progress"><i style="width:${Math.min(100,state.completed.length*20)}%"></i></div>
  <button class="tile" onclick="setPage('lesson')"><span class="emoji">🌷</span><span><strong>日常日文小課堂</strong><small>詞彙、句型及理解 · 約 7 分鐘</small></span><span class="arrow">›</span></button>
  <button class="tile" onclick="setPage('kanaPage')"><span class="emoji">🔤</span><span><strong>五十音花園</strong><small>短時間重溫，改善容易忘記的字母</small></span><span class="arrow">›</span></button>
@@ -80,15 +83,21 @@ function render(){
  else if(page==='map')m.innerHTML=`
  <div class="eyebrow">KOTORI TOWN</div><div class="h1">冒險地圖 🗺️</div>
  <div class="panel"><div style="font-size:28px">🌸 🏫 ☕ 🌳</div><b>Kotori 小鎮</b><div class="muted">完成不同地區的任務，逐步解鎖你的日文能力。</div></div>
- ${[['🌷','五十音花園','kanaPage','字母、發音及拼字'],['🌳','單字森林','lesson','N5 常用詞彙'],['🏫','文法學院','lesson','助詞及基本句型'],['☕','對話咖啡店','story','日常交流練習'],['📚','漫畫圖書館','comic','閱讀理解及口語'],['🏰','JLPT 試煉塔','jlpt','N5 → N4 考試訓練']].map(x=>`<button class="tile" onclick="setPage('${x[2]}')"><span class="emoji">${x[0]}</span><span><strong>${x[1]}</strong><small>${x[3]}</small></span><span class="arrow">›</span></button>`).join('')}`;
+ ${[['🌷','五十音花園','kanaPage','平假名及片假名基本字母'],['🌳','單字森林','vocabPage','N5 常用生活詞彙'],['🏫','文法學院','grammarPage','基本句型及助詞'],['🖌️','漢字小徑','kanjiPage','常見基礎漢字'],['☕','對話咖啡店','story','日常交流練習'],['📚','漫畫圖書館','comic','原創短篇閱讀'],['🏰','JLPT 試煉塔','jlpt','N5 → N4 考試訓練']].map(x=>`<button class="tile" onclick="setPage('${x[2]}')"><span class="emoji">${x[0]}</span><span><strong>${x[1]}</strong><small>${x[3]}</small></span><span class="arrow">›</span></button>`).join('')}`;
  else if(page==='lesson')renderLesson(m);
- else if(page==='kanaPage')m.innerHTML=`
- <div class="eyebrow">KANA GARDEN</div><div class="h1">五十音花園 🌷</div><div class="muted">每天複習少量字母。看見假名時，試著先在心裡讀出來。</div>
- <div class="panel" style="text-align:center"><div class="jp" style="font-size:58px">${kana[state.kanaIndex][0]}</div><div style="font-size:22px;font-weight:700">${kana[state.kanaIndex][1]}</div><div class="muted">${kana[state.kanaIndex][2]}</div></div>
- <div class="muted" style="text-align:center">${state.kanaIndex+1} / ${kana.length}</div>
- <button class="btn secondary" onclick="state.kanaIndex=(state.kanaIndex-1+kana.length)%kana.length;save();render()">← 上一個</button>
- <button class="btn" onclick="state.kanaIndex=(state.kanaIndex+1)%kana.length;save();render()">下一個 →</button>
+ else if(page==='kanaPage'){
+ const list=kanaMode==='hiragana'?hiragana:katakana; const idx=state.kanaIndex%list.length;
+ m.innerHTML=`<div class="eyebrow">KANA GARDEN</div><div class="h1">五十音花園 🌷</div><div class="muted">平假名及片假名各有 46 個基本字母。每天複習幾個，慢慢建立熟悉感。</div>
+ <div class="choices"><button class="choice ${kanaMode==='hiragana'?'selected':''}" onclick="kanaMode='hiragana';state.kanaIndex=0;render()">平假名 ひらがな</button><button class="choice ${kanaMode==='katakana'?'selected':''}" onclick="kanaMode='katakana';state.kanaIndex=0;render()">片假名 カタカナ</button></div>
+ <div class="panel" style="text-align:center"><div class="jp" style="font-size:58px">${list[idx][0]}</div><div style="font-size:22px;font-weight:700">${list[idx][1]}</div><div class="muted">${list[idx][2]}</div></div>
+ <div class="muted" style="text-align:center">${idx+1} / ${list.length}</div>
+ <button class="btn secondary" onclick="state.kanaIndex=(state.kanaIndex-1+${list.length})%${list.length};save();render()">← 上一個</button><button class="btn" onclick="state.kanaIndex=(state.kanaIndex+1)%${list.length};save();render()">下一個 →</button>
  <button class="btn secondary" onclick="setPage('map')">返回地圖</button>`;
+ }
+ else if(page==='vocabPage')renderCards(m,'單字森林 🌳','VOCABULARY FOREST',vocabCards,'單字');
+ else if(page==='grammarPage')renderGrammar(m);
+ else if(page==='kanjiPage')m.innerHTML=`<div class="eyebrow">KANJI GARDEN</div><div class="h1">漢字小徑 🖌️</div><div class="muted">先從常見、容易在生活中遇到的漢字開始。留意讀音和詞語，不用一次記住全部。</div>${[['日','にち／ひ','日、星期'],['月','げつ／つき','月、月份'],['人','ひと／じん','人、日本人'],['山','やま','山、富士山'],['水','みず','水、水曜日'],['火','ひ／か','火、火曜日'],['木','き／もく','樹木、木曜日'],['本','ほん','書、日本']].map(x=>`<div class="tile"><span class="emoji">${x[0]}</span><span><strong>${x[1]}</strong><small>${x[2]}</small></span></div>`).join('')}<div class="muted">提示：同一漢字在不同詞語中可能有不同讀音。</div>`;
+
  else if(page==='story')m.innerHTML=`
  <div class="eyebrow">CHAPTER 01 · はじめての出会い</div><div class="h1">初めての出会い 🌸</div>
  <div class="panel"><div style="font-size:52px;text-align:center">👧🏻 🌸 🐤</div><div class="muted">Kotori 小鎮・學校門口</div><div class="jp" style="font-size:23px">こんにちは！</div><b>Mika：</b><div class="muted">你好！你是新來的學生嗎？</div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><b>請選擇你的回答：</b>
@@ -110,6 +119,14 @@ function render(){
  <div class="section-title">你的學習設定</div><div class="panel muted">五十音：大部分認得，持續複習<br>學習模式：遊戲＋故事情節<br>目標：日常溝通、漫畫、動漫、JLPT、聽力及發音<br>漢字：逐步減少中文提示</div>
  <button class="btn secondary" onclick="if(confirm('確定要清除這部裝置上的學習紀錄嗎？')){localStorage.removeItem(KEY);location.reload()}">重設學習紀錄</button>`;
  updateStats();
+}
+function renderCards(m,title,eyebrow,cards,label){
+ const i=(state.vocabIndex||0)%cards.length, c=cards[i];
+ m.innerHTML=`<div class="eyebrow">${eyebrow}</div><div class="h1">${title}</div><div class="muted">先看日文和讀音，再試著想起中文意思。完成一輪後可以重複複習。</div><div class="panel" style="text-align:center"><div class="jp">${c[0]}</div><div class="reading">${c[1]}</div><div class="muted">${c[2]}</div></div><div class="muted" style="text-align:center">${i+1} / ${cards.length}</div><button class="btn secondary" onclick="state.vocabIndex=(state.vocabIndex||0)-1+${cards.length};state.vocabIndex%= ${cards.length};save();render()">← 上一個</button><button class="btn" onclick="state.vocabIndex=((state.vocabIndex||0)+1)%${cards.length};save();render()">下一個 →</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
+}
+function renderGrammar(m){
+ const i=(state.grammarIndex||0)%grammarCards.length,c=grammarCards[i];
+ m.innerHTML=`<div class="eyebrow">GRAMMAR ACADEMY · N5</div><div class="h1">文法學院 🏫</div><div class="muted">每次掌握一個句型：先理解規則，再朗讀例句。</div><div class="panel"><span class="tag">句型 ${i+1} / ${grammarCards.length}</span><div class="jp" style="font-size:24px">${c[0]}</div><div class="jp" style="font-size:21px">${c[1]}</div><div class="muted" style="text-align:center">${c[2]}</div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><b>文法重點</b><div class="muted">${c[3]}</div></div><button class="btn secondary" onclick="state.grammarIndex=((state.grammarIndex||0)-1+${grammarCards.length})%${grammarCards.length};save();render()">← 上一個句型</button><button class="btn" onclick="state.grammarIndex=((state.grammarIndex||0)+1)%${grammarCards.length};save();render()">下一個句型 →</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
 }
 function renderLesson(m){
  const q=questions[qIndex];

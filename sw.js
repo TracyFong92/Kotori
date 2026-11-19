@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kotori-academy-v1';
+const CACHE_NAME = 'kotori-academy-v2';
 const CORE_ASSETS = [
   './',
   './index.html',
