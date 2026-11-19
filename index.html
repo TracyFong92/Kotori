@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Kotori 日語學園">
-<title>Kotori 日本語學園 2.7</title>
+<title>Kotori 日本語學園 2.7.1</title>
 <style>
 :root{--pink:#f4e5e9;--rose:#bd8da2;--ink:#624c5b;--cream:#fbf7f0;--sage:#8eae98;--muted:#8d7d83;--line:#eadfe2;--white:#fff}
 *{box-sizing:border-box}body{margin:0;background:#f8f5f2;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}
@@ -48,6 +48,31 @@ footer{text-align:center;color:#ad9ca3;font-size:10px;padding:8px 16px 18px}
 .word-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px;margin:9px 0}.word-card .word-top{display:flex;align-items:center;justify-content:space-between}.word-card .word-buttons{display:flex;gap:6px;margin:8px 0}.word-card .word-example{border-top:1px solid var(--line);padding-top:9px;font-size:12px;line-height:1.5}
 .quiz-shell .h1{margin-bottom:8px}.quiz-topline{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin:8px 0}.quiz-shell .choices{gap:9px}.quiz-shell .choice{padding:14px;border-radius:14px;font-size:14px}.quiz-shell .quiz-exit{display:none}
 @media(max-width:360px){.map-card{min-height:108px;padding:11px}.map-card .map-icon{font-size:25px}.forest-hero{padding:13px}}
+
+
+/* Kotori 2.7.1: cleaner study screens and fixed quiz layout */
+.app{position:relative}
+.page-back{position:absolute;top:calc(8px + env(safe-area-inset-top));left:12px;z-index:8;width:38px;height:38px;border-radius:50%;background:#fff;color:var(--ink);border:1px solid var(--line);font-size:25px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px #624c5b12}
+body.quiz-mode{overflow:hidden;height:100dvh}
+body.quiz-mode .app{height:100dvh;min-height:0;overflow:hidden}
+body.quiz-mode header,body.quiz-mode .nav,body.quiz-mode footer{display:none}
+body.quiz-mode main{height:100dvh;min-height:0;overflow:hidden;padding:calc(54px + env(safe-area-inset-top)) 16px 14px;display:flex;flex-direction:column;justify-content:flex-start;gap:5px}
+body.quiz-mode .page-back{top:calc(8px + env(safe-area-inset-top))}
+body.quiz-mode main .h1{font-size:20px;margin:2px 0 5px}
+body.quiz-mode main .muted{font-size:12px;line-height:1.35}
+body.quiz-mode main .panel{margin:7px 0;padding:13px}
+body.quiz-mode main .choices{gap:7px;margin:7px 0}
+body.quiz-mode main .choice{padding:11px 12px;font-size:14px}
+body.quiz-mode main .btn{margin-top:6px;padding:10px 13px}
+body.quiz-mode main .feedback{padding:9px;margin-top:5px;font-size:12px}
+.kana-face{position:relative}
+.kana-bookmark{position:absolute;right:10px;top:10px;width:36px;height:36px;border-radius:11px;background:#fff;border:1px solid var(--line);color:var(--rose);font-size:20px;display:flex;align-items:center;justify-content:center}
+.kana-bookmark.saved{background:#f4e5e9;color:#a45d7a}
+.grammar-pattern{font-size:34px!important;line-height:1.35;margin:14px 0 18px!important;color:#624c5b}
+.grammar-example{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px;margin-top:20px}
+.grammar-example .jp{font-size:23px!important;margin:5px 0 8px}
+.grammar-nav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.grammar-nav .btn{margin-top:0}
 
 </style>
 </head>
@@ -106,6 +131,7 @@ function addToReview(type,key,front,reading,meaning){
  else state.reviewItems.push({id,type,front,reading,meaning,dueAt:Date.now(),interval:1,reps:0});
  save();alert('已加入記憶補給站！下次可以在「記憶補給站」集中複習。');
 }
+function toggleKanaBookmark(mode,kana,reading,meaning){const id='kana:'+mode+':'+kana;const i=state.reviewItems.findIndex(x=>x.id===id);if(i>=0)state.reviewItems.splice(i,1);else state.reviewItems.push({id,type:'kana',front:kana,reading,meaning,dueAt:Date.now(),interval:1,reps:0});save();render()}
 function reviewDue(){return state.reviewItems.filter(x=>x.dueAt<=Date.now())}
 function revealReview(){reviewRevealed=true;renderReview(document.getElementById('main'))}
 function reviewMark(id,known){const item=state.reviewItems.find(x=>x.id===id);if(!item)return;item.reps=(item.reps||0)+1;item.interval=known?Math.min(30,Math.max(3,(item.interval||1)*2)):1;item.dueAt=Date.now()+item.interval*86400000;reviewRevealed=false;save();renderReview(document.getElementById('main'))}
@@ -173,7 +199,9 @@ const comics=[
 function save(){localStorage.setItem(KEY,JSON.stringify(state));updateStats()}
 function updateStats(){document.getElementById('xp').textContent=state.xp;document.getElementById('coins').textContent=state.coins;document.getElementById('level').textContent='🌱 Lv.'+(1+Math.floor(state.xp/100))+' 初心者'}
 function addReward(id,xp=10,coins=3){if(!state.completed.includes(id)){state.completed.push(id);state.xp+=xp;state.coins+=coins;save()}}
-function setPage(p){page=p;document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===p));render()}
+function isQuizPage(p){return ['lesson','kanaQuiz','vocabQuiz','vocab25Quiz','smartReview'].includes(p);}
+function pageBackTarget(p){return p==='kanaQuiz'?'kanaPage':(['vocabQuiz','vocab25Quiz','smartReview'].includes(p)?'vocabPage':'map')}
+function setPage(p){page=p;document.body.classList.toggle('quiz-mode',isQuizPage(p));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===p));render()}
 function render(){
  const m=document.getElementById('main');
  if(page==='home'){
@@ -205,9 +233,9 @@ function render(){
  const list=kanaMode==='hiragana'?hiragana:katakana; const idx=state.kanaIndex%list.length;
  m.innerHTML=`<div class="eyebrow">KANA GARDEN</div><div class="h1">五十音花園 🌷</div><div class="muted">平假名及片假名各有 46 個基本字母。每天複習幾個，慢慢建立熟悉感。</div>
  <div class="choices"><button class="choice ${kanaMode==='hiragana'?'selected':''}" onclick="kanaMode='hiragana';state.kanaIndex=0;render()">平假名 ひらがな</button><button class="choice ${kanaMode==='katakana'?'selected':''}" onclick="kanaMode='katakana';state.kanaIndex=0;render()">片假名 カタカナ</button></div>
- <div class="panel" style="text-align:center"><div class="jp" style="font-size:58px">${list[idx][0]}</div><div style="font-size:22px;font-weight:700">${list[idx][1]}</div><div class="muted">${list[idx][2]}</div></div>
+ <div class="panel kana-face" style="text-align:center"><button class="kana-bookmark ${state.reviewItems.some(x=>x.id==='kana:'+kanaMode+':'+list[idx][0])?'saved':''}" aria-label="加入複習" title="加入複習" onclick='toggleKanaBookmark("${kanaMode}","${list[idx][0]}","${list[idx][1]}","${list[idx][2]}")'>${state.reviewItems.some(x=>x.id==='kana:'+kanaMode+':'+list[idx][0])?'▮':'▯'}</button><div class="jp" style="font-size:58px">${list[idx][0]}</div><div style="font-size:22px;font-weight:700">${list[idx][1]}</div><div class="muted">${list[idx][2]}</div></div>
  <div class="muted" style="text-align:center">${idx+1} / ${list.length}</div>
- <button class="btn secondary" onclick="state.kanaIndex=(state.kanaIndex-1+${list.length})%${list.length};save();render()">← 上一個</button><button class="btn" onclick="state.kanaIndex=(state.kanaIndex+1)%${list.length};save();render()">下一個 →</button><button class="btn secondary" onclick='addToReview("kana","${kanaMode}:${list[idx][0]}","${list[idx][0]}","${list[idx][1]}","${list[idx][2]}")'>這個假名不熟悉 · 加入複習</button><button class="btn secondary" onclick="markDaily('kana')">完成今日五十音任務 +5 XP</button>
+ <button class="btn secondary" onclick="state.kanaIndex=(state.kanaIndex-1+${list.length})%${list.length};save();render()">← 上一個</button><button class="btn" onclick="state.kanaIndex=(state.kanaIndex+1)%${list.length};save();render()">下一個 →</button><button class="btn secondary" onclick="markDaily('kana')">完成今日五十音任務 +5 XP</button>
  <button class="btn" onclick="startKanaQuiz()">🎯 開始五十音測驗（10 題）</button><button class="btn secondary" onclick="setPage('map')">返回地圖</button>`;
  }
  else if(page==='vocabPage')renderVocabForest(m);
@@ -242,6 +270,8 @@ function render(){
  <div class="statgrid"><div class="statbox"><strong>${state.xp}</strong><span class="muted">累積 XP</span></div><div class="statbox"><strong>${state.coins}</strong><span class="muted">金幣</span></div><div class="statbox"><strong>${state.completed.length}</strong><span class="muted">完成任務</span></div><div class="statbox"><strong>25 分</strong><span class="muted">每日目標</span></div></div>
  <div class="section-title">今日學習</div><div class="panel muted">已完成 ${state.dailyDone.length} / ${dailyTasks.length} 項每日任務<br>記憶補給站：${state.reviewItems.length} 張收藏卡</div><div class="section-title">你的學習設定</div><div class="panel muted">五十音：大部分認得，持續複習<br>學習模式：遊戲＋故事情節<br>目標：日常溝通、漫畫、動漫、JLPT、聽力及發音<br>漢字：逐步減少中文提示</div>
  <button class="btn secondary" onclick="if(confirm('確定要清除這部裝置上的學習紀錄嗎？')){localStorage.removeItem(KEY);location.reload()}">重設學習紀錄</button>`;
+ if(page!=='home'&&page!=='map'){const backTarget=pageBackTarget(page);m.insertAdjacentHTML('afterbegin',`<button class="page-back" aria-label="返回" onclick="setPage('${backTarget}')">‹</button>`);}
+ document.body.classList.toggle('quiz-mode',isQuizPage(page));
  updateStats();
 }
 function shuffleArray(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -460,8 +490,8 @@ function renderSmartMistakes(m){
 }
 
 function renderGrammar(m){
- const i=(state.grammarIndex||0)%grammarCards.length,c=grammarCards[i];
- m.innerHTML=`<div class="eyebrow">GRAMMAR ACADEMY · N5</div><div class="h1">文法學院 🏫</div><div class="muted">每次掌握一個句型：先理解規則，再朗讀例句。</div><div class="panel"><span class="tag">句型 ${i+1} / ${grammarCards.length}</span><div class="jp" style="font-size:24px">${c[0]}</div><div class="jp" style="font-size:21px">${c[1]}</div><div class="muted" style="text-align:center">${c[2]}</div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><b>文法重點</b><div class="muted">${c[3]}</div></div><button class="btn secondary" onclick="state.grammarIndex=((state.grammarIndex||0)-1+${grammarCards.length})%${grammarCards.length};save();render()">← 上一個句型</button><button class="btn" onclick="state.grammarIndex=((state.grammarIndex||0)+1)%${grammarCards.length};save();render()">下一個句型 →</button><button class="btn secondary" onclick="markDaily('grammar')">完成今日文法任務 +5 XP</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
+ const i=(state.grammarIndex||0)%grammarCards.length,c=grammarCards[i],done=state.dailyDone.includes('grammar');
+ m.innerHTML=`<div class="eyebrow">GRAMMAR ACADEMY · N5</div><div class="h1">文法學院 🏫</div><div class="panel" style="padding:18px 16px"><span class="tag">句型 ${i+1} / ${grammarCards.length}</span><div class="jp grammar-pattern">${c[0]}</div><div class="muted">${c[3]}</div><div class="grammar-example"><div class="eyebrow">例句</div><div class="jp">${c[1]}</div><div class="muted" style="text-align:center">${c[2]}</div></div></div><div class="grammar-nav"><button class="btn secondary" onclick="state.grammarIndex=((state.grammarIndex||0)-1+${grammarCards.length})%${grammarCards.length};save();render()">← 上一句</button><button class="btn" onclick="state.grammarIndex=((state.grammarIndex||0)+1)%${grammarCards.length};save();render()">下一句 →</button></div><button class="btn secondary" ${done?'disabled':''} onclick="markDaily('grammar')">${done?'已完成':'完成'}</button>`;
 }
 function renderLesson(m){
  const q=questions[qIndex];
