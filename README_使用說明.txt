@@ -1,19 +1,17 @@
-Kotori Japanese Academy 2.0（PWA）
+Kotori Japanese Academy 2.1（PWA）
 
-更新內容：
-- 五十音花園：平假名及片假名各 46 個基本字母
-- 單字森林：新增 N5 基礎生活詞彙卡
-- 文法學院：新增 5 個初級句型及解說
-- 漢字小徑：新增常見基礎漢字示例
-- 保留原有故事、漫畫、JLPT 概覽及 XP／金幣進度
-- Service Worker 快取版本更新
+本次新增：
+- 每日學習路線：五十音、單字、文法、間隔複習、故事、漫畫六項任務
+- 每項每日任務完成後可獲得 5 XP 和 2 金幣；同一天每項只計算一次
+- 記憶補給站：可把不熟悉的假名／單字加入複習卡，安排明天或較後時間再複習
+- 保留原有 localStorage 存檔識別碼，避免更新後 XP／金幣歸零
+- Service Worker 快取名稱更新為 kotori-academy-v21
 
-部署更新：
+更新方法：
 1. 解壓縮 ZIP。
 2. 開啟 kotori_pwa_project 資料夾。
-3. 將資料夾內所有檔案及 icons 資料夾上傳至原本 GitHub Repository 的根目錄。
-4. 選擇覆蓋同名檔案，Commit changes。
-5. 等待 GitHub Pages 更新。
-6. iPhone 主畫面原有 Kotori 圖示可保留；重新開啟時先連接網絡一次，讓新版快取更新。
+3. 將資料夾內所有檔案和 icons 資料夾上傳到原本 GitHub Repository 根目錄，覆蓋同名檔案。
+4. Commit changes，等待 GitHub Pages 部署完成。
+5. iPhone 連接網絡，關閉並重開 Kotori；若仍見舊版，先在 Safari 網站頁面重新整理一次，再開啟主畫面圖示。
 
-注意：這是持續開發中的初級學習原型，並非完整 JLPT 課程。發音音訊、AI 對話及完整模擬試題尚未加入。
+注意：每日任務由使用者在完成練習後自行按完成；記憶補給站是簡易間隔複習功能。此版本仍屬個人化初期原型，非完整官方 JLPT 課程；尚未加入語音辨識、AI 對話及完整聽力音檔。

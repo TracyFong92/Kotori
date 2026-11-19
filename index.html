@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Kotori 日語學園">
-<title>Kotori 日本語學園 2.0</title>
+<title>Kotori 日本語學園 2.1</title>
 <style>
 :root{--pink:#f4e5e9;--rose:#bd8da2;--ink:#624c5b;--cream:#fbf7f0;--sage:#8eae98;--muted:#8d7d83;--line:#eadfe2;--white:#fff}
 *{box-sizing:border-box}body{margin:0;background:#f8f5f2;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}
@@ -45,12 +45,44 @@ footer{text-align:center;color:#ad9ca3;font-size:10px;padding:8px 16px 18px}
  <button data-page="comic"><b>📚</b>漫畫</button>
  <button data-page="profile"><b>♡</b>我的</button>
 </nav>
-<footer>Kotori 2.0 · 每天一點點，日文慢慢進步。🌸</footer>
+<footer>Kotori 2.1 · 每天一點點，日文慢慢進步。🌸</footer>
 </div>
 <script>
 const KEY='kotori-jp-v1';
 let state=JSON.parse(localStorage.getItem(KEY)||'{"xp":0,"coins":0,"completed":[],"kanaIndex":0,"comicIndex":0,"storyDone":false}');
-let page='home',qIndex=0,selected='',answered=false,showHint=true,storyChoice=0,kanaMode='hiragana';
+// Extend old saved progress safely; keep the original storage key so XP and coins remain intact.
+state.reviewItems=Array.isArray(state.reviewItems)?state.reviewItems:[];
+state.dailyDate=state.dailyDate||new Date().toLocaleDateString('en-CA');
+state.dailyDone=Array.isArray(state.dailyDone)?state.dailyDone:[];
+state.reviewIndex=Number.isInteger(state.reviewIndex)?state.reviewIndex:0;
+let page='home',qIndex=0,selected='',answered=false,showHint=true,storyChoice=0,kanaMode='hiragana',reviewRevealed=false;
+const dailyTasks=[
+ {id:'kana',icon:'🔤',title:'五十音暖身',time:'4 分鐘',page:'kanaPage',desc:'複習幾個平假名或片假名'},
+ {id:'vocab',icon:'🌳',title:'單字練習',time:'5 分鐘',page:'vocabPage',desc:'認讀生活常用詞彙'},
+ {id:'grammar',icon:'🏫',title:'文法小課',time:'7 分鐘',page:'grammarPage',desc:'理解一個句型和例句'},
+ {id:'review',icon:'🧠',title:'記憶補給站',time:'4 分鐘',page:'reviewPage',desc:'重溫標記為不熟悉的內容'},
+ {id:'story',icon:'☕',title:'情境對話',time:'5 分鐘',page:'story',desc:'嘗試用日文回應角色'},
+ {id:'comic',icon:'📚',title:'漫畫閱讀',time:'5 分鐘',page:'comic',desc:'閱讀一句原創日文短篇'}
+];
+function localDayKey(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
+function ensureDaily(){const today=localDayKey();if(state.dailyDate!==today){state.dailyDate=today;state.dailyDone=[];save()}}
+function markDaily(id){ensureDaily();if(!state.dailyDone.includes(id)){state.dailyDone.push(id);state.xp+=5;state.coins+=2;save()}render()}
+function addToReview(type,key,front,reading,meaning){
+ const id=type+':'+key; const found=state.reviewItems.find(x=>x.id===id);
+ if(found){found.dueAt=Date.now();found.front=front;found.reading=reading;found.meaning=meaning;}
+ else state.reviewItems.push({id,type,front,reading,meaning,dueAt:Date.now(),interval:1,reps:0});
+ save();alert('已加入記憶補給站！下次可以在「記憶補給站」集中複習。');
+}
+function reviewDue(){return state.reviewItems.filter(x=>x.dueAt<=Date.now())}
+function revealReview(){reviewRevealed=true;renderReview(document.getElementById('main'))}
+function reviewMark(id,known){const item=state.reviewItems.find(x=>x.id===id);if(!item)return;item.reps=(item.reps||0)+1;item.interval=known?Math.min(30,Math.max(3,(item.interval||1)*2)):1;item.dueAt=Date.now()+item.interval*86400000;reviewRevealed=false;save();renderReview(document.getElementById('main'))}
+function renderReview(m){
+ const due=reviewDue(); const all=state.reviewItems.length;
+ if(!due.length){m.innerHTML=`<div class="eyebrow">SPACED REVIEW</div><div class="h1">記憶補給站 🧠</div><div class="panel"><div style="font-size:40px;text-align:center">🌱</div><b>今天暫時沒有到期的複習卡</b><div class="muted">你已收藏 ${all} 張內容。學習時遇到不熟悉的假名或單字，可以按「加入記憶補給站」。</div></div><button class="btn secondary" onclick="markDaily('review')">完成今日複習任務 +5 XP</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;return;}
+ const idx=Math.min(state.reviewIndex,due.length-1),item=due[idx];
+ reviewRevealed=false;
+ m.innerHTML=`<div class="eyebrow">SPACED REVIEW · ${idx+1} / ${due.length}</div><div class="h1">記憶補給站 🧠</div><div class="muted">先看日文卡片，在心中回想讀音和意思，再揭曉答案。</div><div class="panel" style="text-align:center"><div class="jp">${item.front}</div>${reviewRevealed?`<div class="reading">${item.reading||''}</div><div class="muted">${item.meaning||''}</div>`:'<div class="muted">先想一想，再按下方按鈕揭曉答案</div>'}</div><div class="muted">目前有 ${all} 張收藏卡；今日到期 ${due.length} 張。</div>${reviewRevealed?`<button class="btn secondary" onclick="reviewMark('${item.id}',false)">還不熟悉 · 明天再複習</button><button class="btn" onclick="reviewMark('${item.id}',true)">已經記得 · 延後複習</button>`:`<button class="btn" onclick="revealReview()">顯示答案</button>`}<button class="btn secondary" onclick="markDaily('review')">完成今日複習任務 +5 XP</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
+}
 const questions=[
  {jp:'こんにちは',reading:'こんにちは',meaning:'你好／午安',opts:['早上好','你好','晚安','謝謝'],answer:1,why:'こんにちは 是白天見面時常用的問候語。'},
  {jp:'わたしは学生です。',reading:'わたしは がくせい です。',meaning:'我是學生。',opts:['我是老師。','我是學生。','我是日本人。','我不是學生。'],answer:1,why:'わたし 是「我」，学生（がくせい）是「學生」，です 是禮貌句尾。'},
@@ -71,19 +103,21 @@ function addReward(id,xp=10,coins=3){if(!state.completed.includes(id)){state.com
 function setPage(p){page=p;document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===p));render()}
 function render(){
  const m=document.getElementById('main');
- if(page==='home')m.innerHTML=`
- <div class="eyebrow">YOUR DAILY ADVENTURE</div><div class="h1">おかえりなさい！歡迎回來 🌸</div>
+ if(page==='home'){
+ ensureDaily();
+ const done=state.dailyDone.length, pct=Math.round(done/dailyTasks.length*100);
+ m.innerHTML=`<div class="eyebrow">YOUR DAILY ADVENTURE</div><div class="h1">おかえりなさい！歡迎回來 🌸</div>
  <div class="panel welcome"><div class="bird">🐤</div><div><b>Kotori 說：</b><div class="muted">今日も一緒に日本語を勉強しよう！<br>今天也一起學日文吧！</div></div></div>
- <div class="section-title">今日的學習任務</div><div class="muted">每日目標約 20–30 分鐘，五十音、單字、文法和故事循序漸進。</div>
- <div class="progress"><i style="width:${Math.min(100,state.completed.length*20)}%"></i></div>
- <button class="tile" onclick="setPage('lesson')"><span class="emoji">🌷</span><span><strong>日常日文小課堂</strong><small>詞彙、句型及理解 · 約 7 分鐘</small></span><span class="arrow">›</span></button>
- <button class="tile" onclick="setPage('kanaPage')"><span class="emoji">🔤</span><span><strong>五十音花園</strong><small>短時間重溫，改善容易忘記的字母</small></span><span class="arrow">›</span></button>
- <button class="tile" onclick="setPage('story')"><span class="emoji">☕</span><span><strong>故事情境對話</strong><small>在 Kotori 小鎮認識新朋友</small></span><span class="arrow">›</span></button>
- <button class="btn" onclick="setPage('map')">前往學習地圖 →</button>`;
+ <div class="section-title">今日的 20–30 分鐘學習路線</div><div class="muted">完成一項就會獲得 5 XP 和 2 金幣；每天每項只計算一次。</div>
+ <div class="progress"><i style="width:${pct}%"></i></div><div class="muted" style="margin:7px 0 12px">今日進度：${done} / ${dailyTasks.length} 項（${pct}%）</div>
+ ${dailyTasks.map(t=>`<div class="tile"><span class="emoji">${t.icon}</span><span style="flex:1"><strong>${t.title} ${state.dailyDone.includes(t.id)?'✓':''}</strong><small>${t.time} · ${t.desc}</small></span><button class="btn secondary" style="width:auto;margin:0;padding:8px 10px" onclick="setPage('${t.page}')">開始</button>${state.dailyDone.includes(t.id)?'<span class="tag">完成</span>':`<button class="btn" style="width:auto;margin:0;padding:8px 10px" onclick="markDaily('${t.id}')">完成</button>`}</div>`).join('')}
+ <div class="panel"><b>記憶補給站</b><div class="muted">已收藏 ${state.reviewItems.length} 張複習卡 · 今日到期 ${reviewDue().length} 張</div><button class="btn secondary" onclick="setPage('reviewPage')">開始複習 →</button></div>
+ <button class="btn secondary" onclick="setPage('map')">前往完整學習地圖</button>`;
+ }
  else if(page==='map')m.innerHTML=`
  <div class="eyebrow">KOTORI TOWN</div><div class="h1">冒險地圖 🗺️</div>
  <div class="panel"><div style="font-size:28px">🌸 🏫 ☕ 🌳</div><b>Kotori 小鎮</b><div class="muted">完成不同地區的任務，逐步解鎖你的日文能力。</div></div>
- ${[['🌷','五十音花園','kanaPage','平假名及片假名基本字母'],['🌳','單字森林','vocabPage','N5 常用生活詞彙'],['🏫','文法學院','grammarPage','基本句型及助詞'],['🖌️','漢字小徑','kanjiPage','常見基礎漢字'],['☕','對話咖啡店','story','日常交流練習'],['📚','漫畫圖書館','comic','原創短篇閱讀'],['🏰','JLPT 試煉塔','jlpt','N5 → N4 考試訓練']].map(x=>`<button class="tile" onclick="setPage('${x[2]}')"><span class="emoji">${x[0]}</span><span><strong>${x[1]}</strong><small>${x[3]}</small></span><span class="arrow">›</span></button>`).join('')}`;
+ ${[['🌷','五十音花園','kanaPage','平假名及片假名基本字母'],['🌳','單字森林','vocabPage','N5 常用生活詞彙'],['🏫','文法學院','grammarPage','基本句型及助詞'],['🖌️','漢字小徑','kanjiPage','常見基礎漢字'],['🧠','記憶補給站','reviewPage','安排不熟悉內容的間隔複習'],['☕','對話咖啡店','story','日常交流練習'],['📚','漫畫圖書館','comic','原創短篇閱讀'],['🏰','JLPT 試煉塔','jlpt','N5 → N4 考試訓練']].map(x=>`<button class="tile" onclick="setPage('${x[2]}')"><span class="emoji">${x[0]}</span><span><strong>${x[1]}</strong><small>${x[3]}</small></span><span class="arrow">›</span></button>`).join('')}`;
  else if(page==='lesson')renderLesson(m);
  else if(page==='kanaPage'){
  const list=kanaMode==='hiragana'?hiragana:katakana; const idx=state.kanaIndex%list.length;
@@ -91,11 +125,12 @@ function render(){
  <div class="choices"><button class="choice ${kanaMode==='hiragana'?'selected':''}" onclick="kanaMode='hiragana';state.kanaIndex=0;render()">平假名 ひらがな</button><button class="choice ${kanaMode==='katakana'?'selected':''}" onclick="kanaMode='katakana';state.kanaIndex=0;render()">片假名 カタカナ</button></div>
  <div class="panel" style="text-align:center"><div class="jp" style="font-size:58px">${list[idx][0]}</div><div style="font-size:22px;font-weight:700">${list[idx][1]}</div><div class="muted">${list[idx][2]}</div></div>
  <div class="muted" style="text-align:center">${idx+1} / ${list.length}</div>
- <button class="btn secondary" onclick="state.kanaIndex=(state.kanaIndex-1+${list.length})%${list.length};save();render()">← 上一個</button><button class="btn" onclick="state.kanaIndex=(state.kanaIndex+1)%${list.length};save();render()">下一個 →</button>
+ <button class="btn secondary" onclick="state.kanaIndex=(state.kanaIndex-1+${list.length})%${list.length};save();render()">← 上一個</button><button class="btn" onclick="state.kanaIndex=(state.kanaIndex+1)%${list.length};save();render()">下一個 →</button><button class="btn secondary" onclick='addToReview("kana","${kanaMode}:${list[idx][0]}","${list[idx][0]}","${list[idx][1]}","${list[idx][2]}")'>這個假名不熟悉 · 加入複習</button><button class="btn secondary" onclick="markDaily('kana')">完成今日五十音任務 +5 XP</button>
  <button class="btn secondary" onclick="setPage('map')">返回地圖</button>`;
  }
  else if(page==='vocabPage')renderCards(m,'單字森林 🌳','VOCABULARY FOREST',vocabCards,'單字');
  else if(page==='grammarPage')renderGrammar(m);
+ else if(page==='reviewPage'){renderReview(m);}
  else if(page==='kanjiPage')m.innerHTML=`<div class="eyebrow">KANJI GARDEN</div><div class="h1">漢字小徑 🖌️</div><div class="muted">先從常見、容易在生活中遇到的漢字開始。留意讀音和詞語，不用一次記住全部。</div>${[['日','にち／ひ','日、星期'],['月','げつ／つき','月、月份'],['人','ひと／じん','人、日本人'],['山','やま','山、富士山'],['水','みず','水、水曜日'],['火','ひ／か','火、火曜日'],['木','き／もく','樹木、木曜日'],['本','ほん','書、日本']].map(x=>`<div class="tile"><span class="emoji">${x[0]}</span><span><strong>${x[1]}</strong><small>${x[2]}</small></span></div>`).join('')}<div class="muted">提示：同一漢字在不同詞語中可能有不同讀音。</div>`;
 
  else if(page==='story')m.innerHTML=`
@@ -103,11 +138,11 @@ function render(){
  <div class="panel"><div style="font-size:52px;text-align:center">👧🏻 🌸 🐤</div><div class="muted">Kotori 小鎮・學校門口</div><div class="jp" style="font-size:23px">こんにちは！</div><b>Mika：</b><div class="muted">你好！你是新來的學生嗎？</div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><b>請選擇你的回答：</b>
  <div class="choices">${[['はい、そうです。','是的，沒錯。'],['いいえ、違います。','不，不是。']].map((a,i)=>`<button class="choice ${storyChoice===i+1?'selected':''}" onclick="storyChoice=${i+1};render()"><b>${a[0]}</b><div class="muted">${a[1]}</div></button>`).join('')}</div>
  ${storyChoice?'<div class="feedback">Mika：そうなんですね！<br>原來如此！你已經開始用日文回答問題了。</div>':''}</div>
- <button class="btn" ${storyChoice?'':'disabled'} onclick="state.storyDone=true;addReward('story',10,3);setPage('map')">完成對話 +10 XP</button>`;
+ <button class="btn" ${storyChoice?'':'disabled'} onclick="state.storyDone=true;addReward('story',10,3);markDaily('story');setPage('map')">完成對話 +10 XP</button>`;
  else if(page==='comic')m.innerHTML=`
  <div class="eyebrow">MANGA LIBRARY</div><div class="h1">漫畫閱讀室 📚</div><span class="tag">初級原創短篇</span>
  <div class="panel"><b>第 1 話：はじめまして！</b><div class="comicline"><div style="font-size:30px">👧🏻 🌸 👧🏻</div><div class="muted">Mika 在學校門口遇見新朋友。</div></div><div class="jp" style="font-size:22px">${comics[state.comicIndex][0]}</div><div class="muted">${comics[state.comicIndex][1]}</div><hr style="border:0;border-top:1px solid var(--line)"><div class="muted">💡 ${comics[state.comicIndex][2]}</div></div>
- <button class="btn secondary" onclick="state.comicIndex=(state.comicIndex-1+comics.length)%comics.length;save();render()">上一句</button><button class="btn" onclick="state.comicIndex=(state.comicIndex+1)%comics.length;save();render()">下一句 →</button>`;
+ <button class="btn secondary" onclick="state.comicIndex=(state.comicIndex-1+comics.length)%comics.length;save();render()">上一句</button><button class="btn" onclick="state.comicIndex=(state.comicIndex+1)%comics.length;save();render()">下一句 →</button><button class="btn secondary" onclick="markDaily('comic')">完成今日漫畫任務 +5 XP</button>`;
  else if(page==='jlpt')m.innerHTML=`
  <div class="eyebrow">JLPT TRAINING</div><div class="h1">JLPT 試煉塔 🏰</div>
  <div class="panel"><span class="tag">目前建議起點</span><div class="jp">N5</div><b>初級基礎</b><div class="muted">五十音、基本助詞、常用動詞、簡單句子、基礎閱讀及聽力。</div></div>
@@ -116,17 +151,17 @@ function render(){
  else if(page==='profile')m.innerHTML=`
  <div class="eyebrow">MY JOURNEY</div><div class="h1">我的學習紀錄 🌸</div>
  <div class="statgrid"><div class="statbox"><strong>${state.xp}</strong><span class="muted">累積 XP</span></div><div class="statbox"><strong>${state.coins}</strong><span class="muted">金幣</span></div><div class="statbox"><strong>${state.completed.length}</strong><span class="muted">完成任務</span></div><div class="statbox"><strong>25 分</strong><span class="muted">每日目標</span></div></div>
- <div class="section-title">你的學習設定</div><div class="panel muted">五十音：大部分認得，持續複習<br>學習模式：遊戲＋故事情節<br>目標：日常溝通、漫畫、動漫、JLPT、聽力及發音<br>漢字：逐步減少中文提示</div>
+ <div class="section-title">今日學習</div><div class="panel muted">已完成 ${state.dailyDone.length} / ${dailyTasks.length} 項每日任務<br>記憶補給站：${state.reviewItems.length} 張收藏卡</div><div class="section-title">你的學習設定</div><div class="panel muted">五十音：大部分認得，持續複習<br>學習模式：遊戲＋故事情節<br>目標：日常溝通、漫畫、動漫、JLPT、聽力及發音<br>漢字：逐步減少中文提示</div>
  <button class="btn secondary" onclick="if(confirm('確定要清除這部裝置上的學習紀錄嗎？')){localStorage.removeItem(KEY);location.reload()}">重設學習紀錄</button>`;
  updateStats();
 }
 function renderCards(m,title,eyebrow,cards,label){
  const i=(state.vocabIndex||0)%cards.length, c=cards[i];
- m.innerHTML=`<div class="eyebrow">${eyebrow}</div><div class="h1">${title}</div><div class="muted">先看日文和讀音，再試著想起中文意思。完成一輪後可以重複複習。</div><div class="panel" style="text-align:center"><div class="jp">${c[0]}</div><div class="reading">${c[1]}</div><div class="muted">${c[2]}</div></div><div class="muted" style="text-align:center">${i+1} / ${cards.length}</div><button class="btn secondary" onclick="state.vocabIndex=(state.vocabIndex||0)-1+${cards.length};state.vocabIndex%= ${cards.length};save();render()">← 上一個</button><button class="btn" onclick="state.vocabIndex=((state.vocabIndex||0)+1)%${cards.length};save();render()">下一個 →</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
+ m.innerHTML=`<div class="eyebrow">${eyebrow}</div><div class="h1">${title}</div><div class="muted">先看日文和讀音，再試著想起中文意思。完成一輪後可以重複複習。</div><div class="panel" style="text-align:center"><div class="jp">${c[0]}</div><div class="reading">${c[1]}</div><div class="muted">${c[2]}</div></div><div class="muted" style="text-align:center">${i+1} / ${cards.length}</div><button class="btn secondary" onclick="state.vocabIndex=(state.vocabIndex||0)-1+${cards.length};state.vocabIndex%= ${cards.length};save();render()">← 上一個</button><button class="btn" onclick="state.vocabIndex=((state.vocabIndex||0)+1)%${cards.length};save();render()">下一個 →</button><button class="btn secondary" onclick='addToReview("vocab","${c[0]}","${c[0]}","${c[1]}","${c[2]}")'>這個單字不熟悉 · 加入複習</button><button class="btn secondary" onclick="markDaily('vocab')">完成今日單字任務 +5 XP</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
 }
 function renderGrammar(m){
  const i=(state.grammarIndex||0)%grammarCards.length,c=grammarCards[i];
- m.innerHTML=`<div class="eyebrow">GRAMMAR ACADEMY · N5</div><div class="h1">文法學院 🏫</div><div class="muted">每次掌握一個句型：先理解規則，再朗讀例句。</div><div class="panel"><span class="tag">句型 ${i+1} / ${grammarCards.length}</span><div class="jp" style="font-size:24px">${c[0]}</div><div class="jp" style="font-size:21px">${c[1]}</div><div class="muted" style="text-align:center">${c[2]}</div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><b>文法重點</b><div class="muted">${c[3]}</div></div><button class="btn secondary" onclick="state.grammarIndex=((state.grammarIndex||0)-1+${grammarCards.length})%${grammarCards.length};save();render()">← 上一個句型</button><button class="btn" onclick="state.grammarIndex=((state.grammarIndex||0)+1)%${grammarCards.length};save();render()">下一個句型 →</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
+ m.innerHTML=`<div class="eyebrow">GRAMMAR ACADEMY · N5</div><div class="h1">文法學院 🏫</div><div class="muted">每次掌握一個句型：先理解規則，再朗讀例句。</div><div class="panel"><span class="tag">句型 ${i+1} / ${grammarCards.length}</span><div class="jp" style="font-size:24px">${c[0]}</div><div class="jp" style="font-size:21px">${c[1]}</div><div class="muted" style="text-align:center">${c[2]}</div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><b>文法重點</b><div class="muted">${c[3]}</div></div><button class="btn secondary" onclick="state.grammarIndex=((state.grammarIndex||0)-1+${grammarCards.length})%${grammarCards.length};save();render()">← 上一個句型</button><button class="btn" onclick="state.grammarIndex=((state.grammarIndex||0)+1)%${grammarCards.length};save();render()">下一個句型 →</button><button class="btn secondary" onclick="markDaily('grammar')">完成今日文法任務 +5 XP</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
 }
 function renderLesson(m){
  const q=questions[qIndex];
@@ -137,7 +172,7 @@ function renderLesson(m){
  ${answered?`<div class="feedback ${Number(selected)===q.answer?'':'bad'}"><b>${Number(selected)===q.answer?'🎉 正解！':'再記一次吧！'}</b><br>${q.why}</div><button class="btn" onclick="if(Number(selected)===q.answer){state.xp+=10;state.coins+=3;save()}qIndex++;selected='';answered=false;render()">${qIndex===questions.length-1?'完成課堂':'下一題 →'}</button>`:`<button class="btn" ${selected===''?'disabled':''} onclick="answered=true;render()">確認答案</button>`}`;
 }
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.page)));
-updateStats();render();
+ensureDaily();updateStats();render();
 </script>
 <script>
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
