@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Kotori 日語學園">
-<title>Kotori 日本語學園 2.4</title>
+<title>Kotori 日本語學園 2.5</title>
 <style>
 :root{--pink:#f4e5e9;--rose:#bd8da2;--ink:#624c5b;--cream:#fbf7f0;--sage:#8eae98;--muted:#8d7d83;--line:#eadfe2;--white:#fff}
 *{box-sizing:border-box}body{margin:0;background:#f8f5f2;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}
@@ -46,7 +46,7 @@ footer{text-align:center;color:#ad9ca3;font-size:10px;padding:8px 16px 18px}
  <button data-page="comic"><b>📚</b>漫畫</button>
  <button data-page="profile"><b>♡</b>我的</button>
 </nav>
-<footer>Kotori 2.4 · 每天一點點，日文慢慢進步。🌸</footer>
+<footer>Kotori 2.5 · 每天一點點，日文慢慢進步。🌸</footer>
 </div>
 <script>
 const KEY='kotori-jp-v1';
@@ -58,9 +58,13 @@ state.dailyDone=Array.isArray(state.dailyDone)?state.dailyDone:[];
 state.reviewIndex=Number.isInteger(state.reviewIndex)?state.reviewIndex:0;
 state.vocabMistakes=Array.isArray(state.vocabMistakes)?state.vocabMistakes:[];
 state.vocabStage=Math.max(1,Math.min(3,Number(state.vocabStage)||1));
+state.vocab25Stage=Math.max(1,Math.min(3,Number(state.vocab25Stage)||1));
+state.vocab25Stats=state.vocab25Stats&&typeof state.vocab25Stats==='object'?state.vocab25Stats:{};
+state.vocab25Mistakes=Array.isArray(state.vocab25Mistakes)?state.vocab25Mistakes:[];
 let page='home',qIndex=0,selected='',answered=false,showHint=true,storyChoice=0,kanaMode='hiragana',reviewRevealed=false;
 let kanaQuiz={items:[],index:0,selected:-1,answered:false,score:0,finished:false};
 let vocabQuiz={items:[],index:0,selected:-1,answered:false,score:0,finished:false,wrong:[]};
+let vocab25Quiz={mode:'listen',items:[],index:0,selected:-1,answered:false,score:0,finished:false,wrong:[]};
 const dailyTasks=[
  {id:'kana',icon:'🔤',title:'五十音暖身',time:'4 分鐘',page:'kanaPage',desc:'複習幾個平假名或片假名'},
  {id:'vocab',icon:'🌳',title:'單字練習',time:'5 分鐘',page:'vocabPage',desc:'認讀生活常用詞彙'},
@@ -100,6 +104,42 @@ const vocabCards=[
  ['先生','せんせい','老師'],['学生','がくせい','學生'],['日本','にほん','日本'],['家','いえ','家'],['車','くるま','汽車'],['電車','でんしゃ','電車'],['学校へ行きます','がっこうへいきます','去學校'],['大きい','おおきい','大／大型'],['小さい','ちいさい','小／細小'],['新しい','あたらしい','新'],
  ['好き','すき','喜歡'],['見る','みる','看'],['聞く','きく','聽／問'],['読む','よむ','讀'],['買う','かう','買'],['高い','たかい','高／貴'],['安い','やすい','便宜'],['おいしい','おいしい','好吃'],['毎日','まいにち','每天'],['午前','ごぜん','上午']
 ];
+const vocab25Cards=[
+ // 日常生活會話 10
+ {jp:'起きる',reading:'おきる',meaning:'起床',category:'日常生活',example:'毎朝七時に起きます。',exampleReading:'まいあさ しちじに おきます。',exampleMeaning:'我每天早上七點起床。'},
+ {jp:'寝る',reading:'ねる',meaning:'睡覺',category:'日常生活',example:'十一時に寝ます。',exampleReading:'じゅういちじに ねます。',exampleMeaning:'我十一點睡覺。'},
+ {jp:'朝ご飯',reading:'あさごはん',meaning:'早餐',category:'日常生活',example:'朝ご飯を食べます。',exampleReading:'あさごはんを たべます。',exampleMeaning:'我吃早餐。'},
+ {jp:'昼ご飯',reading:'ひるごはん',meaning:'午餐',category:'日常生活',example:'友達と昼ご飯を食べます。',exampleReading:'ともだちと ひるごはんを たべます。',exampleMeaning:'我和朋友吃午餐。'},
+ {jp:'晩ご飯',reading:'ばんごはん',meaning:'晚餐',category:'日常生活',example:'晩ご飯はカレーです。',exampleReading:'ばんごはんは カレーです。',exampleMeaning:'晚餐是咖喱。'},
+ {jp:'忙しい',reading:'いそがしい',meaning:'忙碌',category:'日常生活',example:'今日は少し忙しいです。',exampleReading:'きょうは すこし いそがしいです。',exampleMeaning:'今天有點忙。'},
+ {jp:'休む',reading:'やすむ',meaning:'休息；請假',category:'日常生活',example:'日曜日は家で休みます。',exampleReading:'にちようびは いえで やすみます。',exampleMeaning:'星期日我在家休息。'},
+ {jp:'待つ',reading:'まつ',meaning:'等待',category:'日常生活',example:'駅で友達を待ちます。',exampleReading:'えきで ともだちを まちます。',exampleMeaning:'我在車站等朋友。'},
+ {jp:'手伝う',reading:'てつだう',meaning:'幫忙',category:'日常生活',example:'母を手伝います。',exampleReading:'ははを てつだいます。',exampleMeaning:'我幫媽媽。'},
+ {jp:'一緒に',reading:'いっしょに',meaning:'一起',category:'日常生活',example:'一緒に学校へ行きましょう。',exampleReading:'いっしょに がっこうへ いきましょう。',exampleMeaning:'一起去學校吧。'},
+ // 動漫及漫畫常見用語 10
+ {jp:'本当',reading:'ほんとう',meaning:'真的；真相',category:'動漫漫畫',example:'本当ですか。',exampleReading:'ほんとうですか。',exampleMeaning:'真的嗎？'},
+ {jp:'名前',reading:'なまえ',meaning:'名字',category:'動漫漫畫',example:'あなたの名前は何ですか。',exampleReading:'あなたの なまえは なんですか。',exampleMeaning:'你的名字是甚麼？'},
+ {jp:'みんな',reading:'みんな',meaning:'大家；所有人',category:'動漫漫畫',example:'みんなで行きましょう。',exampleReading:'みんなで いきましょう。',exampleMeaning:'大家一起去吧。'},
+ {jp:'一人',reading:'ひとり',meaning:'一個人',category:'動漫漫畫',example:'一人で学校へ行きます。',exampleReading:'ひとりで がっこうへ いきます。',exampleMeaning:'我一個人去學校。'},
+ {jp:'何',reading:'なに／なん',meaning:'甚麼',category:'動漫漫畫',example:'これは何ですか。',exampleReading:'これは なんですか。',exampleMeaning:'這是甚麼？'},
+ {jp:'どうして',reading:'どうして',meaning:'為甚麼',category:'動漫漫畫',example:'どうして笑っていますか。',exampleReading:'どうして わらっていますか。',exampleMeaning:'你為甚麼在笑？'},
+ {jp:'ありがとう',reading:'ありがとう',meaning:'謝謝',category:'動漫漫畫',example:'助けてくれてありがとう。',exampleReading:'たすけてくれて ありがとう。',exampleMeaning:'謝謝你幫忙。'},
+ {jp:'ごめん',reading:'ごめん',meaning:'對不起（較隨意）',category:'動漫漫畫',example:'遅れてごめん。',exampleReading:'おくれて ごめん。',exampleMeaning:'對不起，我遲到了。'},
+ {jp:'かわいい',reading:'かわいい',meaning:'可愛',category:'動漫漫畫',example:'この猫はかわいいです。',exampleReading:'この ねこは かわいいです。',exampleMeaning:'這隻貓很可愛。'},
+ {jp:'面白い',reading:'おもしろい',meaning:'有趣',category:'動漫漫畫',example:'この漫画は面白いです。',exampleReading:'この まんがは おもしろいです。',exampleMeaning:'這本漫畫很有趣。'},
+ // JLPT N5 常見詞彙 10
+ {jp:'家族',reading:'かぞく',meaning:'家人；家庭',category:'JLPT N5',example:'家族は四人です。',exampleReading:'かぞくは よにんです。',exampleMeaning:'我家有四個人。'},
+ {jp:'天気',reading:'てんき',meaning:'天氣',category:'JLPT N5',example:'今日の天気はいいです。',exampleReading:'きょうの てんきは いいです。',exampleMeaning:'今天天氣很好。'},
+ {jp:'有名',reading:'ゆうめい',meaning:'有名',category:'JLPT N5',example:'この町は有名です。',exampleReading:'この まちは ゆうめいです。',exampleMeaning:'這個城鎮很有名。'},
+ {jp:'便利',reading:'べんり',meaning:'方便',category:'JLPT N5',example:'この辞書は便利です。',exampleReading:'この じしょは べんりです。',exampleMeaning:'這本字典很方便。'},
+ {jp:'近い',reading:'ちかい',meaning:'近',category:'JLPT N5',example:'駅はここから近いです。',exampleReading:'えきは ここから ちかいです。',exampleMeaning:'車站離這裏很近。'},
+ {jp:'遠い',reading:'とおい',meaning:'遠',category:'JLPT N5',example:'学校は少し遠いです。',exampleReading:'がっこうは すこし とおいです。',exampleMeaning:'學校有點遠。'},
+ {jp:'早い',reading:'はやい',meaning:'早；快',category:'JLPT N5',example:'今日は早く起きました。',exampleReading:'きょうは はやく おきました。',exampleMeaning:'我今天很早起床。'},
+ {jp:'遅い',reading:'おそい',meaning:'遲；慢',category:'JLPT N5',example:'バスは少し遅いです。',exampleReading:'バスは すこし おそいです。',exampleMeaning:'巴士有點遲。'},
+ {jp:'勉強',reading:'べんきょう',meaning:'學習；溫習',category:'JLPT N5',example:'毎日日本語を勉強します。',exampleReading:'まいにち にほんごを べんきょうします。',exampleMeaning:'我每天學習日文。'},
+ {jp:'旅行',reading:'りょこう',meaning:'旅行',category:'JLPT N5',example:'夏休みに旅行します。',exampleReading:'なつやすみに りょこうします。',exampleMeaning:'暑假去旅行。'}
+];
+
 const grammarCards=[['A は B です','わたしは学生です。','我是學生。','は 標示句子的主題；です 是禮貌句尾。'],['A は B じゃありません','わたしは先生じゃありません。','我不是老師。','じゃありません 用來作禮貌的否定判斷。'],['N を Vます','水を飲みます。','喝水。','を 標示動作的對象。'],['場所 で Vます','学校で勉強します。','在學校讀書。','で 表示動作發生的場所。'],['時間 に Vます','七時に起きます。','七點起床。','に 可標示具體時間點。']];
 const comics=[
  ['こんにちは！わたしはミカです。','你好！我是 Mika。','こんにちは 是日常打招呼的用語。'],
@@ -126,7 +166,7 @@ function render(){
  else if(page==='map')m.innerHTML=`
  <div class="eyebrow">KOTORI TOWN</div><div class="h1">冒險地圖 🗺️</div>
  <div class="panel"><div style="font-size:28px">🌸 🏫 ☕ 🌳</div><b>Kotori 小鎮</b><div class="muted">完成不同地區的任務，逐步解鎖你的日文能力。</div></div>
- ${[['🌷','五十音花園','kanaPage','平假名及片假名基本字母'],['🌳','單字森林','vocabPage','N5 常用生活詞彙'],['🏫','文法學院','grammarPage','基本句型及助詞'],['🖌️','漢字小徑','kanjiPage','常見基礎漢字'],['🧠','記憶補給站','reviewPage','安排不熟悉內容的間隔複習'],['☕','對話咖啡店','story','日常交流練習'],['📚','漫畫圖書館','comic','原創短篇閱讀'],['🏰','JLPT 試煉塔','jlpt','N5 → N4 考試訓練']].map(x=>`<button class="tile" onclick="setPage('${x[2]}')"><span class="emoji">${x[0]}</span><span><strong>${x[1]}</strong><small>${x[3]}</small></span><span class="arrow">›</span></button>`).join('')}`;
+ ${[['🌷','五十音花園','kanaPage','平假名及片假名基本字母'],['🌳','單字森林','vocabPage','N5 詞彙、例句及聽力練習'],['🏫','文法學院','grammarPage','基本句型及助詞'],['🖌️','漢字小徑','kanjiPage','常見基礎漢字'],['🧠','記憶補給站','reviewPage','安排不熟悉內容的間隔複習'],['☕','對話咖啡店','story','日常交流練習'],['📚','漫畫圖書館','comic','原創短篇閱讀'],['🏰','JLPT 試煉塔','jlpt','N5 → N4 考試訓練']].map(x=>`<button class="tile" onclick="setPage('${x[2]}')"><span class="emoji">${x[0]}</span><span><strong>${x[1]}</strong><small>${x[3]}</small></span><span class="arrow">›</span></button>`).join('')}`;
  else if(page==='lesson')renderLesson(m);
  else if(page==='kanaQuiz')renderKanaQuiz(m);
  else if(page==='kanaPage'){
@@ -141,6 +181,8 @@ function render(){
  else if(page==='vocabPage')renderVocabForest(m);
  else if(page==='vocabQuiz')renderVocabQuiz(m);
  else if(page==='vocabMistakes')renderVocabMistakes(m);
+ else if(page==='vocab25Quiz')renderVocab25Quiz(m);
+ else if(page==='vocab25Stats')renderVocab25Stats(m);
  else if(page==='grammarPage')renderGrammar(m);
  else if(page==='reviewPage'){renderReview(m);}
  else if(page==='kanjiPage')m.innerHTML=`<div class="eyebrow">KANJI GARDEN</div><div class="h1">漢字小徑 🖌️</div><div class="muted">先從常見、容易在生活中遇到的漢字開始。留意讀音和詞語，不用一次記住全部。</div>${[['日','にち／ひ','日、星期'],['月','げつ／つき','月、月份'],['人','ひと／じん','人、日本人'],['山','やま','山、富士山'],['水','みず','水、水曜日'],['火','ひ／か','火、火曜日'],['木','き／もく','樹木、木曜日'],['本','ほん','書、日本']].map(x=>`<div class="tile"><span class="emoji">${x[0]}</span><span><strong>${x[1]}</strong><small>${x[2]}</small></span></div>`).join('')}<div class="muted">提示：同一漢字在不同詞語中可能有不同讀音。</div>`;
@@ -211,15 +253,55 @@ function speakJapanese(text){
 }
 
 function renderVocabForest(m){
- const unlocked=state.vocabStage*10;
- const stageNames=['森林入口','林間小徑','森林深處'];
- m.innerHTML=`<div class="eyebrow">VOCABULARY FOREST · JLPT N5</div><div class="h1">單字森林 🌳</div>
- <div class="panel"><div style="font-size:36px;text-align:center">🌱 🌿 🌳</div><b>逐步解鎖 N5 單字</b><div class="muted">目前開放第 ${state.vocabStage} 區：${stageNames[state.vocabStage-1]}。先熟習這一區，再挑戰下一區。</div><div class="progress"><i style="width:${unlocked/30*100}%"></i></div><div class="muted">${unlocked} / 30 個單字已開放</div></div>
- <div class="section-title">單字卡</div>${vocabCards.slice(0,unlocked).map((c,i)=>`<div class="tile"><span class="emoji">${['🌱','🍃','🌼'][Math.floor(i/10)]}</span><span style="flex:1"><strong>${c[0]}</strong><small>${c[1]} · ${c[2]}</small></span><div class="vocab-actions"><button class="speak-btn" type="button" aria-label="播放${c[0]}的日文讀音" title="播放日文讀音" onclick="speakJapanese(vocabCards[${i}][0])">🔊</button><button class="btn secondary" style="width:auto;margin:0;padding:7px 9px" onclick='addToReview("vocab","${c[0]}","${c[0]}","${c[1]}","${c[2]}")'>收藏</button></div></div>`).join('')}
- <button class="btn" onclick="startVocabQuiz(false)">🎯 開始單字測驗（10 題）</button>
- <button class="btn secondary" onclick="setPage('vocabMistakes')">📖 重溫錯題（${state.vocabMistakes.length}）</button>
- <button class="btn secondary" onclick="markDaily('vocab')">完成今日單字任務 +5 XP</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
+ const unlocked=state.vocab25Stage*10,stageNames=['生活小鎮','動漫漫畫街','N5 試煉區'];
+ const start=(state.vocab25Stage-1)*10,active=vocab25Cards.slice(0,unlocked);
+ const stats=Object.values(state.vocab25Stats),mastered=stats.filter(x=>x&&x.correct>=3).length;
+ m.innerHTML=`<div class="eyebrow">VOCABULARY FOREST · VERSION 2.5</div><div class="h1">單字森林 2.0 🌳</div>
+ <div class="panel"><div style="font-size:34px;text-align:center">🌱 🌿 🌳</div><b>30 個全新 N5 單字</b><div class="muted">第 ${state.vocab25Stage} 區：${stageNames[state.vocab25Stage-1]}。每區 10 個單字，完成測驗並取得 8/10 或以上即可解鎖下一區。</div><div class="progress"><i style="width:${unlocked/30*100}%"></i></div><div class="muted">已開放 ${unlocked} / 30 個新單字 · 已掌握 ${mastered} 個</div></div>
+ <div class="section-title">${stageNames[state.vocab25Stage-1]} · 單字卡</div>
+ ${active.map((c,i)=>{const idx=i,st=state.vocab25Stats[c.jp]||{correct:0,attempts:0};return `<div class="panel"><div style="display:flex;align-items:center;gap:8px"><span class="tag">${c.category}</span><span class="muted" style="margin-left:auto">${st.correct>=3?'🌟 已掌握':`答對 ${st.correct} 次`}</span></div><div class="jp">${c.jp}</div><div class="reading">${c.reading}</div><div class="muted" style="text-align:center">${c.meaning}</div><div style="display:flex;gap:8px;justify-content:center;margin:9px 0"><button class="speak-btn" onclick="speakJapanese(vocab25Cards[${idx}].jp)" aria-label="播放單字發音">🔊 單字</button><button class="speak-btn" onclick="speakJapanese(vocab25Cards[${idx}].example)" aria-label="播放例句發音">🗣️ 例句</button><button class="speak-btn" onclick='addToReview("vocab","${c.jp}","${c.jp}","${c.reading}","${c.meaning}")' aria-label="加入記憶補給站">＋</button></div><div style="border-top:1px solid var(--line);padding-top:10px"><b>${c.example}</b><div class="reading">${c.exampleReading}</div><div class="muted">${c.exampleMeaning}</div></div></div>`}).join('')}
+ <div class="section-title">學習挑戰</div><button class="btn" onclick="startVocab25Quiz('listen')">🎧 聽力單字測驗（10 題）</button><button class="btn" onclick="startVocab25Quiz('sentence')">📖 例句理解測驗（10 題）</button><button class="btn secondary" onclick="setPage('vocab25Stats')">📊 單字成長紀錄</button>
+ <button class="btn secondary" onclick="startVocabQuiz(false)">重溫舊版單字測驗</button><button class="btn secondary" onclick="setPage('vocabMistakes')">📖 舊版錯題重溫（${state.vocabMistakes.length}）</button><button class="btn secondary" onclick="markDaily('vocab')">完成今日單字任務 +5 XP</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
 }
+function startVocab25Quiz(mode){
+ const start=(state.vocab25Stage-1)*10;const pool=vocab25Cards.slice(start,state.vocab25Stage*10);
+ const chosen=shuffleArray(pool).slice(0,10);
+ vocab25Quiz={mode,items:chosen.map((word,i)=>{
+  const others=shuffleArray(pool.filter(x=>x.jp!==word.jp)).slice(0,3);
+  const correct=mode==='listen'?word.jp:word.exampleMeaning;
+  const distractors=others.map(x=>mode==='listen'?x.jp:x.exampleMeaning);
+  const opts=shuffleArray([correct,...distractors]);
+  return {word,opts,answer:opts.indexOf(correct)};
+ }),index:0,selected:-1,answered:false,score:0,finished:false,wrong:[]};
+ setPage('vocab25Quiz');
+}
+function answerVocab25Quiz(i){
+ if(vocab25Quiz.answered)return;
+ const q=vocab25Quiz.items[vocab25Quiz.index];vocab25Quiz.selected=i;vocab25Quiz.answered=true;
+ const st=state.vocab25Stats[q.word.jp]||(state.vocab25Stats[q.word.jp]={correct:0,attempts:0});st.attempts++;
+ if(i===q.answer){vocab25Quiz.score++;st.correct++;state.vocab25Mistakes=state.vocab25Mistakes.filter(x=>x!==q.word.jp);}
+ else {vocab25Quiz.wrong.push(q.word);if(!state.vocab25Mistakes.includes(q.word.jp))state.vocab25Mistakes.push(q.word.jp);}
+ save();render();
+}
+function nextVocab25Quiz(){vocab25Quiz.index++;vocab25Quiz.selected=-1;vocab25Quiz.answered=false;if(vocab25Quiz.index>=vocab25Quiz.items.length)finishVocab25Quiz();else render();}
+function finishVocab25Quiz(){
+ vocab25Quiz.finished=true;
+ if(vocab25Quiz.score>=8&&state.vocab25Stage<3){state.vocab25Stage++;vocab25Quiz.unlocked=true;}
+ const today=localDayKey(),rewardKey=vocab25Quiz.mode==='listen'?'vocab25ListenRewardDate':'vocab25SentenceRewardDate';
+ if(vocab25Quiz.score>=7&&state[rewardKey]!==today){state.xp+=5;state.coins+=2;state[rewardKey]=today;vocab25Quiz.rewarded=true;}else vocab25Quiz.rewarded=false;
+ save();render();
+}
+function renderVocab25Quiz(m){
+ if(vocab25Quiz.finished){const pass=vocab25Quiz.score>=7;m.innerHTML=`<div class="eyebrow">KOTORI 2.5 · RESULT</div><div class="h1">${vocab25Quiz.mode==='listen'?'聽力':'例句理解'}測驗完成！🌸</div><div class="panel" style="text-align:center"><div style="font-size:46px">${pass?'🏆':'🌱'}</div><div class="jp">${vocab25Quiz.score} / 10</div><b>${pass?'よくできました！做得很好！':'もう一度頑張ろう！再試一次吧！'}</b><div class="muted">答對 ${vocab25Quiz.score} 題；答錯 ${vocab25Quiz.wrong.length} 題。</div></div>${vocab25Quiz.unlocked?'<div class="feedback">🎉 成功解鎖下一個單字區域！</div>':''}${vocab25Quiz.rewarded?'<div class="feedback">🎁 首次達到 7/10，獲得 +5 XP 及 +2 金幣！</div>':'<div class="muted">答對 7 題或以上可領取每日首次獎勵（每種測驗每日一次）。</div>'}<button class="btn" onclick="startVocab25Quiz('${vocab25Quiz.mode}')">再測一次</button><button class="btn secondary" onclick="setPage('vocab25Stats')">查看成長紀錄</button><button class="btn secondary" onclick="setPage('vocabPage')">返回單字森林</button>`;return;}
+ const q=vocab25Quiz.items[vocab25Quiz.index],listen=vocab25Quiz.mode==='listen';
+ m.innerHTML=`<div class="eyebrow">KOTORI 2.5 · ${listen?'LISTENING':'SENTENCE'} QUIZ</div><div class="h1">${listen?'聽力單字測驗 🎧':'例句理解測驗 📖'}</div><div class="muted">題目 ${vocab25Quiz.index+1} / 10　·　答對 ${vocab25Quiz.score} 題</div><div class="progress"><i style="width:${vocab25Quiz.index/10*100}%"></i></div><div class="panel" style="text-align:center;padding:22px">${listen?`<div class="muted">按喇叭聆聽日語，再選出聽到的單字</div><button class="speak-btn" style="width:58px;height:58px;font-size:25px;margin:16px" onclick="speakJapanese(vocab25Quiz.items[vocab25Quiz.index].word.jp)">🔊</button>`:`<div class="muted">請選出以下日文句子的正確意思</div><div class="jp" style="font-size:24px">${q.word.example}</div><div class="reading">${q.word.exampleReading}</div>`}</div><div class="choices">${q.opts.map((o,i)=>`<button class="choice ${vocab25Quiz.answered&&i===q.answer?'correct':''} ${vocab25Quiz.answered&&i===vocab25Quiz.selected&&i!==q.answer?'wrong':''}" ${vocab25Quiz.answered?'disabled':''} onclick="answerVocab25Quiz(${i})">${'ABCD'[i]}. ${o}</button>`).join('')}</div>${vocab25Quiz.answered?`<div class="feedback ${vocab25Quiz.selected===q.answer?'':'bad'}"><b>${vocab25Quiz.selected===q.answer?'🎉 正確！':'再記住這個單字！'}</b><br>${q.word.jp}（${q.word.reading}）＝${q.word.meaning}<br>${q.word.example}<br>${q.word.exampleMeaning}</div><button class="btn" onclick="nextVocab25Quiz()">${vocab25Quiz.index===9?'查看測驗結果':'下一題 →'}</button>`:''}<button class="btn secondary" onclick="if(confirm('確定離開測驗？今次不會結算獎勵。'))setPage('vocabPage')">離開測驗</button>`;
+}
+function renderVocab25Stats(m){
+ const entries=vocab25Cards.map(w=>({word:w,stat:state.vocab25Stats[w.jp]||{correct:0,attempts:0}}));
+ const mastered=entries.filter(x=>x.stat.correct>=3).length,attempted=entries.filter(x=>x.stat.attempts>0).length,correct=entries.reduce((n,x)=>n+x.stat.correct,0),attempts=entries.reduce((n,x)=>n+x.stat.attempts,0),accuracy=attempts?Math.round(correct/attempts*100):0;
+ m.innerHTML=`<div class="eyebrow">KOTORI 2.5 · PROGRESS</div><div class="h1">單字成長紀錄 📊</div><div class="statgrid"><div class="statbox"><strong>${attempted}/30</strong><span class="muted">已練習單字</span></div><div class="statbox"><strong>${mastered}/30</strong><span class="muted">已掌握單字</span></div><div class="statbox"><strong>${attempts}</strong><span class="muted">總答題次數</span></div><div class="statbox"><strong>${accuracy}%</strong><span class="muted">答題正確率</span></div><div class="statbox"><strong>${state.vocab25Mistakes.length}</strong><span class="muted">待複習單字</span></div></div><div class="panel"><b>掌握標準</b><div class="muted">同一個單字累積答對 3 次，便會標記為「已掌握」。答題紀錄會保存在這部裝置上。</div><div class="progress"><i style="width:${mastered/30*100}%"></i></div><div class="muted">目前掌握 ${mastered} / 30 個</div></div><div class="section-title">需要再複習的單字</div>${state.vocab25Mistakes.length?state.vocab25Mistakes.map(w=>{const c=vocab25Cards.find(x=>x.jp===w);return c?`<div class="tile"><span style="flex:1"><strong>${c.jp}</strong><small>${c.reading} · ${c.meaning}</small></span><button class="speak-btn" onclick="speakJapanese('${c.jp}')">🔊</button></div>`:''}).join(''):'<div class="muted">目前沒有待複習單字，做得好！</div>'}<div class="section-title">單字紀錄</div>${entries.map(x=>`<div class="tile"><span style="flex:1"><strong>${x.word.jp}　<small>${x.word.reading}</small></strong><small>${x.word.meaning} · 答對 ${x.stat.correct} / ${x.stat.attempts} 次</small></span><span class="tag">${x.stat.correct>=3?'已掌握':'學習中'}</span></div>`).join('')}<button class="btn secondary" onclick="setPage('vocabPage')">返回單字森林</button>`;
+}
+
 function startVocabQuiz(mistakesOnly){
  let pool=mistakesOnly?state.vocabMistakes.map(x=>x.word):vocabCards.slice(0,state.vocabStage*10);
  pool=pool.filter(Boolean);
