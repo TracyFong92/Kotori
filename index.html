@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7e9ed">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kotori 日語學園">
+<title>Kotori 日本語學園</title>
+<style>
+:root{--pink:#f4e5e9;--rose:#bd8da2;--ink:#624c5b;--cream:#fbf7f0;--sage:#8eae98;--muted:#8d7d83;--line:#eadfe2;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:#f8f5f2;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}
+button{font:inherit;cursor:pointer;border:0} .app{max-width:520px;min-height:100dvh;margin:auto;background:#fff;display:flex;flex-direction:column;box-shadow:0 0 30px #6b4e5a12}
+header{background:var(--pink);padding:calc(16px + env(safe-area-inset-top)) 18px 16px;display:flex;justify-content:space-between;align-items:center}
+.brand{font-weight:800;font-size:20px;letter-spacing:.5px}.sub{font-size:10px;color:#9a7e8b;letter-spacing:1.5px;margin-top:3px}.mascot{font-size:36px}
+.stats{display:flex;gap:8px;margin-top:12px;font-size:12px}.pill{background:#fff9;border-radius:20px;padding:6px 10px}
+main{padding:18px 16px 100px;flex:1}.eyebrow{font-size:11px;color:var(--muted);letter-spacing:1px}.h1{font-size:23px;font-weight:800;margin:5px 0 14px}.panel{background:var(--cream);border:1px solid var(--line);border-radius:18px;padding:15px;margin:12px 0}.welcome{display:flex;gap:12px;align-items:center}.bird{font-size:42px}.muted{color:var(--muted);font-size:13px;line-height:1.6}.section-title{font-weight:800;margin:20px 0 10px}.progress{height:8px;background:#eee5e8;border-radius:20px;overflow:hidden}.progress>i{display:block;height:100%;background:var(--sage);width:0%;transition:.25s}
+.btn{background:var(--sage);color:white;border-radius:13px;padding:12px 16px;font-weight:700;width:100%;margin-top:10px}.btn.secondary{background:#f3e9ed;color:var(--ink)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.tile{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:15px;padding:13px;margin:9px 0;background:#fff;text-align:left;width:100%;color:inherit}.tile .emoji{font-size:27px}.tile strong{display:block;font-size:14px}.tile small{color:var(--muted);font-size:11px}.tile .arrow{margin-left:auto;color:#aa929d}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,100%);padding:9px 8px calc(9px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;z-index:3}.nav button{background:none;color:#9c8b93;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:55px}.nav button b{font-size:20px}.nav button.active{color:#789d83;font-weight:800}
+.choices{display:grid;gap:8px;margin:12px 0}.choice{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:left;color:var(--ink)}.choice.selected{border:2px solid var(--sage);background:#f1f7f1}.choice.correct{border:2px solid #75a783;background:#edf6ee}.choice.wrong{border:2px solid #d69a9a;background:#fff0f0}
+.jp{font-size:30px;font-weight:800;text-align:center;margin:8px 0}.reading{text-align:center;color:#987e8a;font-size:13px}.feedback{padding:12px;border-radius:12px;background:#edf6ee;font-size:13px;line-height:1.6;margin-top:10px}.feedback.bad{background:#fff0f0}
+.tag{display:inline-block;background:#e9f2e9;color:#64836b;border-radius:20px;padding:5px 9px;font-size:11px}
+.comicline{background:white;border:2px solid #d9cbd0;border-radius:12px;padding:18px;text-align:center;margin:10px 0;min-height:115px;display:flex;flex-direction:column;justify-content:center}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.statbox{background:var(--cream);border-radius:14px;padding:16px;text-align:center}.statbox strong{font-size:25px;display:block}
+footer{text-align:center;color:#ad9ca3;font-size:10px;padding:8px 16px 18px}
+@media(min-width:600px){body{padding:18px 0}.app{border-radius:24px;overflow:hidden;min-height:850px}.nav{bottom:18px;border-radius:0 0 24px 24px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div><div class="brand">ことり日本語学園</div><div class="sub">KOTORI JAPANESE ACADEMY</div>
+ <div class="stats"><span class="pill" id="level">🌱 Lv.1 初心者</span><span class="pill">⭐ <b id="xp">0</b> XP</span><span class="pill">🪙 <b id="coins">0</b></span></div></div>
+ <div class="mascot" aria-label="Kotori 小鳥">🐤</div>
+</header>
+<main id="main"></main>
+<nav class="nav">
+ <button data-page="home" class="active"><b>⌂</b>首頁</button>
+ <button data-page="map"><b>🗺️</b>學習地圖</button>
+ <button data-page="story"><b>💬</b>故事</button>
+ <button data-page="comic"><b>📚</b>漫畫</button>
+ <button data-page="profile"><b>♡</b>我的</button>
+</nav>
+<footer>每天一點點，日文慢慢進步。🌸</footer>
+</div>
+<script>
+const KEY='kotori-jp-v1';
+let state=JSON.parse(localStorage.getItem(KEY)||'{"xp":0,"coins":0,"completed":[],"kanaIndex":0,"comicIndex":0,"storyDone":false}');
+let page='home',qIndex=0,selected='',answered=false,showHint=true,storyChoice=0;
+const questions=[
+ {jp:'こんにちは',reading:'こんにちは',meaning:'你好／午安',opts:['早上好','你好','晚安','謝謝'],answer:1,why:'こんにちは 是白天見面時常用的問候語。'},
+ {jp:'わたしは学生です。',reading:'わたしは がくせい です。',meaning:'我是學生。',opts:['我是老師。','我是學生。','我是日本人。','我不是學生。'],answer:1,why:'わたし 是「我」，学生（がくせい）是「學生」，です 是禮貌句尾。'},
+ {jp:'水を飲みます。',reading:'みずを のみます。',meaning:'喝水。',opts:['吃飯。','喝茶。','喝水。','買水。'],answer:2,why:'水（みず）是水，飲みます（のみます）是喝。'}
+];
+const kana=[['あ','a','あさ（早上）'],['い','i','いぬ（狗）'],['う','u','うみ（海）'],['え','e','えき（車站）'],['お','o','おに（鬼）'],['か','ka','かさ（雨傘）'],['き','ki','きつね（狐狸）']];
+const comics=[
+ ['こんにちは！わたしはミカです。','你好！我是 Mika。','こんにちは 是日常打招呼的用語。'],
+ ['よろしくお願いします！','請多多指教！','初次認識別人時很常用的禮貌說法。'],
+ ['日本語は難しいですか？','日文很難嗎？','難しい（むずかしい）是「困難」的意思。']
+];
+function save(){localStorage.setItem(KEY,JSON.stringify(state));updateStats()}
+function updateStats(){document.getElementById('xp').textContent=state.xp;document.getElementById('coins').textContent=state.coins;document.getElementById('level').textContent='🌱 Lv.'+(1+Math.floor(state.xp/100))+' 初心者'}
+function addReward(id,xp=10,coins=3){if(!state.completed.includes(id)){state.completed.push(id);state.xp+=xp;state.coins+=coins;save()}}
+function setPage(p){page=p;document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===p));render()}
+function render(){
+ const m=document.getElementById('main');
+ if(page==='home')m.innerHTML=`
+ <div class="eyebrow">YOUR DAILY ADVENTURE</div><div class="h1">おかえりなさい！歡迎回來 🌸</div>
+ <div class="panel welcome"><div class="bird">🐤</div><div><b>Kotori 說：</b><div class="muted">今日も一緒に日本語を勉強しよう！<br>今天也一起學日文吧！</div></div></div>
+ <div class="section-title">今日的學習任務</div><div class="muted">每日目標約 20–30 分鐘，完成一點點就很棒。</div>
+ <div class="progress"><i style="width:${Math.min(100,state.completed.length*20)}%"></i></div>
+ <button class="tile" onclick="setPage('lesson')"><span class="emoji">🌷</span><span><strong>日常日文小課堂</strong><small>詞彙、句型及理解 · 約 7 分鐘</small></span><span class="arrow">›</span></button>
+ <button class="tile" onclick="setPage('kanaPage')"><span class="emoji">🔤</span><span><strong>五十音花園</strong><small>短時間重溫，改善容易忘記的字母</small></span><span class="arrow">›</span></button>
+ <button class="tile" onclick="setPage('story')"><span class="emoji">☕</span><span><strong>故事情境對話</strong><small>在 Kotori 小鎮認識新朋友</small></span><span class="arrow">›</span></button>
+ <button class="btn" onclick="setPage('map')">前往學習地圖 →</button>`;
+ else if(page==='map')m.innerHTML=`
+ <div class="eyebrow">KOTORI TOWN</div><div class="h1">冒險地圖 🗺️</div>
+ <div class="panel"><div style="font-size:28px">🌸 🏫 ☕ 🌳</div><b>Kotori 小鎮</b><div class="muted">完成不同地區的任務，逐步解鎖你的日文能力。</div></div>
+ ${[['🌷','五十音花園','kanaPage','字母、發音及拼字'],['🌳','單字森林','lesson','N5 常用詞彙'],['🏫','文法學院','lesson','助詞及基本句型'],['☕','對話咖啡店','story','日常交流練習'],['📚','漫畫圖書館','comic','閱讀理解及口語'],['🏰','JLPT 試煉塔','jlpt','N5 → N4 考試訓練']].map(x=>`<button class="tile" onclick="setPage('${x[2]}')"><span class="emoji">${x[0]}</span><span><strong>${x[1]}</strong><small>${x[3]}</small></span><span class="arrow">›</span></button>`).join('')}`;
+ else if(page==='lesson')renderLesson(m);
+ else if(page==='kanaPage')m.innerHTML=`
+ <div class="eyebrow">KANA GARDEN</div><div class="h1">五十音花園 🌷</div><div class="muted">每天複習少量字母。看見假名時，試著先在心裡讀出來。</div>
+ <div class="panel" style="text-align:center"><div class="jp" style="font-size:58px">${kana[state.kanaIndex][0]}</div><div style="font-size:22px;font-weight:700">${kana[state.kanaIndex][1]}</div><div class="muted">${kana[state.kanaIndex][2]}</div></div>
+ <div class="muted" style="text-align:center">${state.kanaIndex+1} / ${kana.length}</div>
+ <button class="btn secondary" onclick="state.kanaIndex=(state.kanaIndex-1+kana.length)%kana.length;save();render()">← 上一個</button>
+ <button class="btn" onclick="state.kanaIndex=(state.kanaIndex+1)%kana.length;save();render()">下一個 →</button>
+ <button class="btn secondary" onclick="setPage('map')">返回地圖</button>`;
+ else if(page==='story')m.innerHTML=`
+ <div class="eyebrow">CHAPTER 01 · はじめての出会い</div><div class="h1">初めての出会い 🌸</div>
+ <div class="panel"><div style="font-size:52px;text-align:center">👧🏻 🌸 🐤</div><div class="muted">Kotori 小鎮・學校門口</div><div class="jp" style="font-size:23px">こんにちは！</div><b>Mika：</b><div class="muted">你好！你是新來的學生嗎？</div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><b>請選擇你的回答：</b>
+ <div class="choices">${[['はい、そうです。','是的，沒錯。'],['いいえ、違います。','不，不是。']].map((a,i)=>`<button class="choice ${storyChoice===i+1?'selected':''}" onclick="storyChoice=${i+1};render()"><b>${a[0]}</b><div class="muted">${a[1]}</div></button>`).join('')}</div>
+ ${storyChoice?'<div class="feedback">Mika：そうなんですね！<br>原來如此！你已經開始用日文回答問題了。</div>':''}</div>
+ <button class="btn" ${storyChoice?'':'disabled'} onclick="state.storyDone=true;addReward('story',10,3);setPage('map')">完成對話 +10 XP</button>`;
+ else if(page==='comic')m.innerHTML=`
+ <div class="eyebrow">MANGA LIBRARY</div><div class="h1">漫畫閱讀室 📚</div><span class="tag">初級原創短篇</span>
+ <div class="panel"><b>第 1 話：はじめまして！</b><div class="comicline"><div style="font-size:30px">👧🏻 🌸 👧🏻</div><div class="muted">Mika 在學校門口遇見新朋友。</div></div><div class="jp" style="font-size:22px">${comics[state.comicIndex][0]}</div><div class="muted">${comics[state.comicIndex][1]}</div><hr style="border:0;border-top:1px solid var(--line)"><div class="muted">💡 ${comics[state.comicIndex][2]}</div></div>
+ <button class="btn secondary" onclick="state.comicIndex=(state.comicIndex-1+comics.length)%comics.length;save();render()">上一句</button><button class="btn" onclick="state.comicIndex=(state.comicIndex+1)%comics.length;save();render()">下一句 →</button>`;
+ else if(page==='jlpt')m.innerHTML=`
+ <div class="eyebrow">JLPT TRAINING</div><div class="h1">JLPT 試煉塔 🏰</div>
+ <div class="panel"><span class="tag">目前建議起點</span><div class="jp">N5</div><b>初級基礎</b><div class="muted">五十音、基本助詞、常用動詞、簡單句子、基礎閱讀及聽力。</div></div>
+ <div class="panel"><span class="tag" style="background:#f1eaf2;color:#886c8e">下一階段</span><div class="jp">N4</div><b>初中級</b><div class="muted">動詞變化、較複雜句型、日常閱讀及聽力理解。</div></div>
+ <div class="muted">正式課程會按 JLPT 能力範圍編排，並以練習結果決定何時進階。</div>`;
+ else if(page==='profile')m.innerHTML=`
+ <div class="eyebrow">MY JOURNEY</div><div class="h1">我的學習紀錄 🌸</div>
+ <div class="statgrid"><div class="statbox"><strong>${state.xp}</strong><span class="muted">累積 XP</span></div><div class="statbox"><strong>${state.coins}</strong><span class="muted">金幣</span></div><div class="statbox"><strong>${state.completed.length}</strong><span class="muted">完成任務</span></div><div class="statbox"><strong>25 分</strong><span class="muted">每日目標</span></div></div>
+ <div class="section-title">你的學習設定</div><div class="panel muted">五十音：大部分認得，持續複習<br>學習模式：遊戲＋故事情節<br>目標：日常溝通、漫畫、動漫、JLPT、聽力及發音<br>漢字：逐步減少中文提示</div>
+ <button class="btn secondary" onclick="if(confirm('確定要清除這部裝置上的學習紀錄嗎？')){localStorage.removeItem(KEY);location.reload()}">重設學習紀錄</button>`;
+ updateStats();
+}
+function renderLesson(m){
+ const q=questions[qIndex];
+ if(qIndex>=questions.length){m.innerHTML=`<div style="text-align:center;padding:35px 5px"><div style="font-size:55px">🏆</div><div class="h1">課堂完成！</div><div class="jp">よくできました！</div><div class="muted">做得很好！你完成了今天的日文小挑戰。</div><div class="panel"><b>獲得獎勵</b><div class="jp">+${questions.length*10} XP</div></div><button class="btn" onclick="setPage('map')">返回學習地圖</button></div>`;return}
+ m.innerHTML=`<div class="eyebrow">DAILY LESSON · N5</div><div class="h1">日常日文小課堂</div><div class="muted">題目 ${qIndex+1} / ${questions.length}</div><div class="progress"><i style="width:${qIndex/questions.length*100}%"></i></div>
+ <div class="panel"><div class="jp">${q.jp}</div>${showHint?`<div class="reading">${q.reading}</div><div class="muted" style="text-align:center;margin-top:5px">${q.meaning}</div>`:''}<button class="btn secondary" onclick="showHint=!showHint;render()"> ${showHint?'隱藏':'顯示'} 假名及中文提示</button></div>
+ <b>選擇正確的意思：</b><div class="choices">${q.opts.map((o,i)=>`<button class="choice ${selected===String(i)?(answered?(i===q.answer?'correct':'wrong'):'selected'):''}" ${answered?'disabled':''} onclick="selected='${i}';render()">${'ABCD'[i]}. ${o}</button>`).join('')}</div>
+ ${answered?`<div class="feedback ${Number(selected)===q.answer?'':'bad'}"><b>${Number(selected)===q.answer?'🎉 正解！':'再記一次吧！'}</b><br>${q.why}</div><button class="btn" onclick="if(Number(selected)===q.answer){state.xp+=10;state.coins+=3;save()}qIndex++;selected='';answered=false;render()">${qIndex===questions.length-1?'完成課堂':'下一題 →'}</button>`:`<button class="btn" ${selected===''?'disabled':''} onclick="answered=true;render()">確認答案</button>`}`;
+}
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.page)));
+updateStats();render();
+</script>
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.warn('Service worker registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>
