@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Kotori 日語學園">
-<title>Kotori 日本語學園 2.3</title>
+<title>Kotori 日本語學園 2.4</title>
 <style>
 :root{--pink:#f4e5e9;--rose:#bd8da2;--ink:#624c5b;--cream:#fbf7f0;--sage:#8eae98;--muted:#8d7d83;--line:#eadfe2;--white:#fff}
 *{box-sizing:border-box}body{margin:0;background:#f8f5f2;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}
@@ -19,6 +19,7 @@ header{background:var(--pink);padding:calc(16px + env(safe-area-inset-top)) 18px
 .stats{display:flex;gap:8px;margin-top:12px;font-size:12px}.pill{background:#fff9;border-radius:20px;padding:6px 10px}
 main{padding:18px 16px 100px;flex:1}.eyebrow{font-size:11px;color:var(--muted);letter-spacing:1px}.h1{font-size:23px;font-weight:800;margin:5px 0 14px}.panel{background:var(--cream);border:1px solid var(--line);border-radius:18px;padding:15px;margin:12px 0}.welcome{display:flex;gap:12px;align-items:center}.bird{font-size:42px}.muted{color:var(--muted);font-size:13px;line-height:1.6}.section-title{font-weight:800;margin:20px 0 10px}.progress{height:8px;background:#eee5e8;border-radius:20px;overflow:hidden}.progress>i{display:block;height:100%;background:var(--sage);width:0%;transition:.25s}
 .btn{background:var(--sage);color:white;border-radius:13px;padding:12px 16px;font-weight:700;width:100%;margin-top:10px}.btn.secondary{background:#f3e9ed;color:var(--ink)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.speak-btn{background:#fff7fa;color:var(--rose);border:1px solid var(--line);border-radius:11px;width:38px;height:38px;flex:0 0 38px;padding:0;margin:0;display:inline-flex;align-items:center;justify-content:center;font-size:18px}.speak-btn:active{transform:scale(.96)}.vocab-actions{display:flex;align-items:center;gap:7px}
 .tile{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:15px;padding:13px;margin:9px 0;background:#fff;text-align:left;width:100%;color:inherit}.tile .emoji{font-size:27px}.tile strong{display:block;font-size:14px}.tile small{color:var(--muted);font-size:11px}.tile .arrow{margin-left:auto;color:#aa929d}
 .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,100%);padding:9px 8px calc(9px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;z-index:3}.nav button{background:none;color:#9c8b93;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:55px}.nav button b{font-size:20px}.nav button.active{color:#789d83;font-weight:800}
 .choices{display:grid;gap:8px;margin:12px 0}.choice{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:left;color:var(--ink)}.choice.selected{border:2px solid var(--sage);background:#f1f7f1}.choice.correct{border:2px solid #75a783;background:#edf6ee}.choice.wrong{border:2px solid #d69a9a;background:#fff0f0}
@@ -45,7 +46,7 @@ footer{text-align:center;color:#ad9ca3;font-size:10px;padding:8px 16px 18px}
  <button data-page="comic"><b>📚</b>漫畫</button>
  <button data-page="profile"><b>♡</b>我的</button>
 </nav>
-<footer>Kotori 2.3 · 每天一點點，日文慢慢進步。🌸</footer>
+<footer>Kotori 2.4 · 每天一點點，日文慢慢進步。🌸</footer>
 </div>
 <script>
 const KEY='kotori-jp-v1';
@@ -192,12 +193,29 @@ function renderCards(m,title,eyebrow,cards,label){
  m.innerHTML=`<div class="eyebrow">${eyebrow}</div><div class="h1">${title}</div><div class="muted">先看日文和讀音，再試著想起中文意思。完成一輪後可以重複複習。</div><div class="panel" style="text-align:center"><div class="jp">${c[0]}</div><div class="reading">${c[1]}</div><div class="muted">${c[2]}</div></div><div class="muted" style="text-align:center">${i+1} / ${cards.length}</div><button class="btn secondary" onclick="state.vocabIndex=(state.vocabIndex||0)-1+${cards.length};state.vocabIndex%= ${cards.length};save();render()">← 上一個</button><button class="btn" onclick="state.vocabIndex=((state.vocabIndex||0)+1)%${cards.length};save();render()">下一個 →</button><button class="btn secondary" onclick='addToReview("vocab","${c[0]}","${c[0]}","${c[1]}","${c[2]}")'>這個單字不熟悉 · 加入複習</button><button class="btn secondary" onclick="markDaily('vocab')">完成今日單字任務 +5 XP</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
 }
 
+function speakJapanese(text){
+ if(!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)){
+   alert('你的瀏覽器暫時未支援日文語音播放，請使用 iPhone Safari 或更新瀏覽器。');
+   return;
+ }
+ const utterance=new SpeechSynthesisUtterance(String(text||''));
+ utterance.lang='ja-JP';
+ utterance.rate=0.88;
+ utterance.pitch=1;
+ const voices=window.speechSynthesis.getVoices();
+ const japaneseVoice=voices.find(v=>/^ja([_-]|$)/i.test(v.lang)) || voices.find(v=>/japanese/i.test(v.name));
+ if(japaneseVoice) utterance.voice=japaneseVoice;
+ window.speechSynthesis.cancel();
+ window.speechSynthesis.resume();
+ window.speechSynthesis.speak(utterance);
+}
+
 function renderVocabForest(m){
  const unlocked=state.vocabStage*10;
  const stageNames=['森林入口','林間小徑','森林深處'];
  m.innerHTML=`<div class="eyebrow">VOCABULARY FOREST · JLPT N5</div><div class="h1">單字森林 🌳</div>
  <div class="panel"><div style="font-size:36px;text-align:center">🌱 🌿 🌳</div><b>逐步解鎖 N5 單字</b><div class="muted">目前開放第 ${state.vocabStage} 區：${stageNames[state.vocabStage-1]}。先熟習這一區，再挑戰下一區。</div><div class="progress"><i style="width:${unlocked/30*100}%"></i></div><div class="muted">${unlocked} / 30 個單字已開放</div></div>
- <div class="section-title">單字卡</div>${vocabCards.slice(0,unlocked).map((c,i)=>`<div class="tile"><span class="emoji">${['🌱','🍃','🌼'][Math.floor(i/10)]}</span><span style="flex:1"><strong>${c[0]}</strong><small>${c[1]} · ${c[2]}</small></span><button class="btn secondary" style="width:auto;margin:0;padding:7px 9px" onclick='addToReview("vocab","${c[0]}","${c[0]}","${c[1]}","${c[2]}")'>收藏</button></div>`).join('')}
+ <div class="section-title">單字卡</div>${vocabCards.slice(0,unlocked).map((c,i)=>`<div class="tile"><span class="emoji">${['🌱','🍃','🌼'][Math.floor(i/10)]}</span><span style="flex:1"><strong>${c[0]}</strong><small>${c[1]} · ${c[2]}</small></span><div class="vocab-actions"><button class="speak-btn" type="button" aria-label="播放${c[0]}的日文讀音" title="播放日文讀音" onclick="speakJapanese(vocabCards[${i}][0])">🔊</button><button class="btn secondary" style="width:auto;margin:0;padding:7px 9px" onclick='addToReview("vocab","${c[0]}","${c[0]}","${c[1]}","${c[2]}")'>收藏</button></div></div>`).join('')}
  <button class="btn" onclick="startVocabQuiz(false)">🎯 開始單字測驗（10 題）</button>
  <button class="btn secondary" onclick="setPage('vocabMistakes')">📖 重溫錯題（${state.vocabMistakes.length}）</button>
  <button class="btn secondary" onclick="markDaily('vocab')">完成今日單字任務 +5 XP</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
