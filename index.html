@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Kotori 日語學園">
-<title>Kotori 日本語學園 2.1</title>
+<title>Kotori 日本語學園 2.2</title>
 <style>
 :root{--pink:#f4e5e9;--rose:#bd8da2;--ink:#624c5b;--cream:#fbf7f0;--sage:#8eae98;--muted:#8d7d83;--line:#eadfe2;--white:#fff}
 *{box-sizing:border-box}body{margin:0;background:#f8f5f2;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}
@@ -45,7 +45,7 @@ footer{text-align:center;color:#ad9ca3;font-size:10px;padding:8px 16px 18px}
  <button data-page="comic"><b>📚</b>漫畫</button>
  <button data-page="profile"><b>♡</b>我的</button>
 </nav>
-<footer>Kotori 2.1 · 每天一點點，日文慢慢進步。🌸</footer>
+<footer>Kotori 2.2 · 每天一點點，日文慢慢進步。🌸</footer>
 </div>
 <script>
 const KEY='kotori-jp-v1';
@@ -56,6 +56,7 @@ state.dailyDate=state.dailyDate||new Date().toLocaleDateString('en-CA');
 state.dailyDone=Array.isArray(state.dailyDone)?state.dailyDone:[];
 state.reviewIndex=Number.isInteger(state.reviewIndex)?state.reviewIndex:0;
 let page='home',qIndex=0,selected='',answered=false,showHint=true,storyChoice=0,kanaMode='hiragana',reviewRevealed=false;
+let kanaQuiz={items:[],index:0,selected:-1,answered:false,score:0,finished:false};
 const dailyTasks=[
  {id:'kana',icon:'🔤',title:'五十音暖身',time:'4 分鐘',page:'kanaPage',desc:'複習幾個平假名或片假名'},
  {id:'vocab',icon:'🌳',title:'單字練習',time:'5 分鐘',page:'vocabPage',desc:'認讀生活常用詞彙'},
@@ -119,6 +120,7 @@ function render(){
  <div class="panel"><div style="font-size:28px">🌸 🏫 ☕ 🌳</div><b>Kotori 小鎮</b><div class="muted">完成不同地區的任務，逐步解鎖你的日文能力。</div></div>
  ${[['🌷','五十音花園','kanaPage','平假名及片假名基本字母'],['🌳','單字森林','vocabPage','N5 常用生活詞彙'],['🏫','文法學院','grammarPage','基本句型及助詞'],['🖌️','漢字小徑','kanjiPage','常見基礎漢字'],['🧠','記憶補給站','reviewPage','安排不熟悉內容的間隔複習'],['☕','對話咖啡店','story','日常交流練習'],['📚','漫畫圖書館','comic','原創短篇閱讀'],['🏰','JLPT 試煉塔','jlpt','N5 → N4 考試訓練']].map(x=>`<button class="tile" onclick="setPage('${x[2]}')"><span class="emoji">${x[0]}</span><span><strong>${x[1]}</strong><small>${x[3]}</small></span><span class="arrow">›</span></button>`).join('')}`;
  else if(page==='lesson')renderLesson(m);
+ else if(page==='kanaQuiz')renderKanaQuiz(m);
  else if(page==='kanaPage'){
  const list=kanaMode==='hiragana'?hiragana:katakana; const idx=state.kanaIndex%list.length;
  m.innerHTML=`<div class="eyebrow">KANA GARDEN</div><div class="h1">五十音花園 🌷</div><div class="muted">平假名及片假名各有 46 個基本字母。每天複習幾個，慢慢建立熟悉感。</div>
@@ -126,7 +128,7 @@ function render(){
  <div class="panel" style="text-align:center"><div class="jp" style="font-size:58px">${list[idx][0]}</div><div style="font-size:22px;font-weight:700">${list[idx][1]}</div><div class="muted">${list[idx][2]}</div></div>
  <div class="muted" style="text-align:center">${idx+1} / ${list.length}</div>
  <button class="btn secondary" onclick="state.kanaIndex=(state.kanaIndex-1+${list.length})%${list.length};save();render()">← 上一個</button><button class="btn" onclick="state.kanaIndex=(state.kanaIndex+1)%${list.length};save();render()">下一個 →</button><button class="btn secondary" onclick='addToReview("kana","${kanaMode}:${list[idx][0]}","${list[idx][0]}","${list[idx][1]}","${list[idx][2]}")'>這個假名不熟悉 · 加入複習</button><button class="btn secondary" onclick="markDaily('kana')">完成今日五十音任務 +5 XP</button>
- <button class="btn secondary" onclick="setPage('map')">返回地圖</button>`;
+ <button class="btn" onclick="startKanaQuiz()">🎯 開始五十音測驗（10 題）</button><button class="btn secondary" onclick="setPage('map')">返回地圖</button>`;
  }
  else if(page==='vocabPage')renderCards(m,'單字森林 🌳','VOCABULARY FOREST',vocabCards,'單字');
  else if(page==='grammarPage')renderGrammar(m);
@@ -154,6 +156,27 @@ function render(){
  <div class="section-title">今日學習</div><div class="panel muted">已完成 ${state.dailyDone.length} / ${dailyTasks.length} 項每日任務<br>記憶補給站：${state.reviewItems.length} 張收藏卡</div><div class="section-title">你的學習設定</div><div class="panel muted">五十音：大部分認得，持續複習<br>學習模式：遊戲＋故事情節<br>目標：日常溝通、漫畫、動漫、JLPT、聽力及發音<br>漢字：逐步減少中文提示</div>
  <button class="btn secondary" onclick="if(confirm('確定要清除這部裝置上的學習紀錄嗎？')){localStorage.removeItem(KEY);location.reload()}">重設學習紀錄</button>`;
  updateStats();
+}
+function shuffleArray(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function startKanaQuiz(){
+ const pool=kanaMode==='hiragana'?hiragana:katakana;
+ const chosen=shuffleArray(pool).slice(0,10);
+ kanaQuiz={items:chosen.map(item=>{const distractors=shuffleArray(pool.filter(x=>x[1]!==item[1])).map(x=>x[1]);const opts=shuffleArray([item[1],...distractors.slice(0,3)]);return {kana:item[0],reading:item[1],example:item[2],opts,answer:opts.indexOf(item[1])};}),index:0,selected:-1,answered:false,score:0,finished:false};
+ setPage('kanaQuiz');
+}
+function answerKanaQuiz(i){if(kanaQuiz.answered)return;kanaQuiz.selected=i;kanaQuiz.answered=true;if(i===kanaQuiz.items[kanaQuiz.index].answer)kanaQuiz.score++;render();}
+function nextKanaQuiz(){kanaQuiz.index++;kanaQuiz.selected=-1;kanaQuiz.answered=false;if(kanaQuiz.index>=kanaQuiz.items.length){finishKanaQuiz();}else render();}
+function finishKanaQuiz(){
+ kanaQuiz.finished=true;
+ const today=localDayKey();
+ if(kanaQuiz.score>=7 && state.kanaQuizRewardDate!==today){state.xp+=10;state.coins+=3;state.kanaQuizRewardDate=today;kanaQuiz.rewarded=true;save();}
+ else {kanaQuiz.rewarded=false;save();}
+ render();
+}
+function renderKanaQuiz(m){
+ if(kanaQuiz.finished){const pass=kanaQuiz.score>=7; m.innerHTML=`<div class="eyebrow">KANA GARDEN · QUIZ RESULT</div><div class="h1">測驗完成！🌸</div><div class="panel" style="text-align:center"><div style="font-size:48px">${pass?'🏆':'🌱'}</div><div class="jp" style="font-size:36px">${kanaQuiz.score} / 10</div><b>${pass?'よくできました！做得很好！':'もう一度頑張ろう！再試一次吧！'}</b><div class="muted">${kanaQuiz.score>=9?'非常熟練！繼續保持。':pass?'基礎掌握得不錯，可以繼續練習。':'建議回到五十音花園重溫，再挑戰一次。'}</div></div>${kanaQuiz.rewarded?'<div class="feedback">🎉 今日首次達到 7 題或以上，獲得 +10 XP 及 +3 金幣！</div>':state.kanaQuizRewardDate===localDayKey()&&pass?'<div class="muted">今日的測驗獎勵已領取，仍可繼續練習。</div>':'<div class="muted">答對 7 題或以上可獲得每日首次測驗獎勵：10 XP + 3 金幣。</div>'}<button class="btn" onclick="startKanaQuiz()">再測一次</button><button class="btn secondary" onclick="setPage(\'kanaPage\')">返回五十音花園</button><button class="btn secondary" onclick="setPage(\'map\')">返回學習地圖</button>`;return;}
+ const q=kanaQuiz.items[kanaQuiz.index];
+ m.innerHTML=`<div class="eyebrow">KANA GARDEN · ${kanaMode==='hiragana'?'HIRAGANA':'KATAKANA'} QUIZ</div><div class="h1">五十音測驗 🎯</div><div class="muted">選出這個假名正確的羅馬拼音。測驗共 10 題，不會顯示提示。</div><div class="muted" style="margin:10px 0 6px">題目 ${kanaQuiz.index+1} / 10　·　答對 ${kanaQuiz.score} 題</div><div class="progress"><i style="width:${kanaQuiz.index/10*100}%"></i></div><div class="panel" style="text-align:center;padding:25px"><div class="muted">這個假名怎樣讀？</div><div class="jp" style="font-size:76px;margin:18px 0">${q.kana}</div></div><div class="choices">${q.opts.map((o,i)=>`<button class="choice ${kanaQuiz.answered&&i===q.answer?'correct':''} ${kanaQuiz.answered&&i===kanaQuiz.selected&&i!==q.answer?'wrong':''}" ${kanaQuiz.answered?'disabled':''} onclick="answerKanaQuiz(${i})">${'ABCD'[i]}. ${o}</button>`).join('')}</div>${kanaQuiz.answered?`<div class="feedback ${kanaQuiz.selected===q.answer?'':'bad'}"><b>${kanaQuiz.selected===q.answer?'🎉 正確！':'再記住這個讀音！'}</b><br>${q.kana} 讀作 ${q.reading}。例子：${q.example}</div><button class="btn" onclick="nextKanaQuiz()">${kanaQuiz.index===9?'查看測驗結果':'下一題 →'}</button>`:''}<button class="btn secondary" onclick="if(confirm('確定要離開測驗嗎？今次進度不會計分。'))setPage('kanaPage')">離開測驗</button>`;
 }
 function renderCards(m,title,eyebrow,cards,label){
  const i=(state.vocabIndex||0)%cards.length, c=cards[i];
