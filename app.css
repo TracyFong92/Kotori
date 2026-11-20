@@ -1,0 +1,139 @@
+:root{--pink:#f4e5e9;--rose:#bd8da2;--ink:#624c5b;--cream:#fbf7f0;--sage:#8eae98;--muted:#8d7d83;--line:#eadfe2;--white:#fff}
+*{box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}body{margin:0;background:#f8f5f2;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif;touch-action:pan-y}
+button{font:inherit;cursor:pointer;border:0} .app{max-width:520px;height:100dvh;min-height:0;margin:auto;background:#fff;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 30px #6b4e5a12}
+header{background:var(--pink);padding:calc(16px + env(safe-area-inset-top)) 18px 16px;display:flex;justify-content:space-between;align-items:center}
+.brand{font-weight:800;font-size:20px;letter-spacing:.5px}.sub{font-size:10px;color:#9a7e8b;letter-spacing:1.5px;margin-top:3px}.mascot{font-size:36px}
+.stats{display:flex;gap:8px;margin-top:12px;font-size:12px}.pill{background:#fff9;border-radius:20px;padding:6px 10px}
+main{padding:18px 16px 100px;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.eyebrow{font-size:11px;color:var(--muted);letter-spacing:1px}.h1{font-size:23px;font-weight:800;margin:5px 0 14px}.panel{background:var(--cream);border:1px solid var(--line);border-radius:18px;padding:15px;margin:12px 0}.welcome{display:flex;gap:12px;align-items:center}.bird{font-size:42px}.muted{color:var(--muted);font-size:13px;line-height:1.6}.section-title{font-weight:800;margin:20px 0 10px}.progress{height:8px;background:#eee5e8;border-radius:20px;overflow:hidden}.progress>i{display:block;height:100%;background:var(--sage);width:0%;transition:.25s}
+.btn{background:var(--sage);color:white;border-radius:13px;padding:12px 16px;font-weight:700;width:100%;margin-top:10px}.btn.secondary{background:#f3e9ed;color:var(--ink)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.speak-btn{background:#fff7fa;color:var(--rose);border:1px solid var(--line);border-radius:11px;width:38px;height:38px;flex:0 0 38px;padding:0;margin:0;display:inline-flex;align-items:center;justify-content:center;font-size:18px}.speak-btn:active{transform:scale(.96)}.vocab-actions{display:flex;align-items:center;gap:7px}
+.tile{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:15px;padding:13px;margin:9px 0;background:#fff;text-align:left;width:100%;color:inherit}.tile .emoji{font-size:27px}.tile strong{display:block;font-size:14px}.tile small{color:var(--muted);font-size:11px}.tile .arrow{margin-left:auto;color:#aa929d}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,100%);padding:9px 8px calc(9px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;z-index:3}.nav button{background:none;color:#9c8b93;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:55px}.nav button b{font-size:20px}.nav button.active{color:#789d83;font-weight:800}
+.choices{display:grid;gap:8px;margin:12px 0}.choice{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:left;color:var(--ink)}.choice.selected{border:2px solid var(--sage);background:#f1f7f1}.choice.correct{border:2px solid #75a783;background:#edf6ee}.choice.wrong{border:2px solid #d69a9a;background:#fff0f0}
+.jp{font-size:30px;font-weight:800;text-align:center;margin:8px 0}.reading{text-align:center;color:#987e8a;font-size:13px}.feedback{padding:12px;border-radius:12px;background:#edf6ee;font-size:13px;line-height:1.6;margin-top:10px}.feedback.bad{background:#fff0f0}
+.tag{display:inline-block;background:#e9f2e9;color:#64836b;border-radius:20px;padding:5px 9px;font-size:11px}
+.comicline{background:white;border:2px solid #d9cbd0;border-radius:12px;padding:18px;text-align:center;margin:10px 0;min-height:115px;display:flex;flex-direction:column;justify-content:center}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.statbox{background:var(--cream);border-radius:14px;padding:16px;text-align:center}.statbox strong{font-size:25px;display:block}
+footer{text-align:center;color:#ad9ca3;font-size:10px;padding:8px 16px 18px}
+@media(min-width:600px){body{padding:18px 0}.app{border-radius:24px;overflow:hidden;min-height:850px}.nav{bottom:18px;border-radius:0 0 24px 24px}}
+
+/* Kotori 2.7: clearer game hierarchy, fewer competing controls */
+.map-intro{display:flex;align-items:center;gap:12px;padding:14px 16px;background:linear-gradient(135deg,#fbf1f3,#f4f5ec);border:1px solid var(--line);border-radius:20px;margin:12px 0 16px}
+.map-intro .map-bird{font-size:38px}.map-intro b{font-size:15px}.map-intro .muted{margin-top:2px}
+.map-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.map-card{position:relative;min-height:116px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(155deg,#fff,#fbf7f0);padding:14px 12px;text-align:left;color:var(--ink);display:flex;flex-direction:column;gap:5px;box-shadow:0 3px 10px #624c5b08}
+.map-card:active,.forest-action:active{transform:scale(.98)}.map-card .map-icon{font-size:28px}.map-card strong{font-size:14px}.map-card small{font-size:11px;color:var(--muted);line-height:1.4}.map-card .map-arrow{position:absolute;right:12px;top:12px;color:#b29aa5}
+.forest-hero{background:linear-gradient(135deg,#f6e9ed,#edf3e9);border:1px solid var(--line);border-radius:20px;padding:16px;margin:12px 0}
+.forest-hero-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.forest-hero h2{font-size:19px;margin:0}.forest-hero p{font-size:12px;color:var(--muted);margin:6px 0 12px;line-height:1.5}
+.forest-action{width:100%;border:0;border-radius:15px;background:var(--sage);color:white;padding:13px 15px;text-align:left;display:flex;align-items:center;gap:10px;font-weight:800}
+.forest-action .action-icon{font-size:23px}.forest-action small{display:block;font-size:11px;font-weight:500;opacity:.9;margin-top:2px}
+.challenge-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:10px 0 14px}
+.challenge-mini{border:1px solid var(--line);border-radius:15px;background:#fff;padding:12px;text-align:left;color:var(--ink);font-weight:700;min-height:76px}
+.challenge-mini small{display:block;color:var(--muted);font-size:11px;font-weight:400;margin-top:4px}
+.forest-tools{margin:14px 0;border-top:1px solid var(--line);padding-top:12px}.forest-tools summary{cursor:pointer;color:#806a75;font-size:12px;font-weight:700;list-style:none}.forest-tools summary::-webkit-details-marker{display:none}.forest-tools summary:after{content:'＋';float:right}.forest-tools[open] summary:after{content:'－'}
+.forest-tools .tool-links{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.tool-link{background:#faf6f4;border:1px solid var(--line);border-radius:11px;padding:10px;color:var(--ink);font-size:12px;text-align:left}
+.word-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px;margin:9px 0}.word-card .word-top{display:flex;align-items:center;justify-content:space-between}.word-card .word-buttons{display:flex;gap:6px;margin:8px 0}.word-card .word-example{border-top:1px solid var(--line);padding-top:9px;font-size:12px;line-height:1.5}
+/* Kotori 2.8.4: category-first vocabulary forest and always-visible study action */
+.forest-sticky{position:sticky;top:-18px;z-index:2;background:linear-gradient(180deg,#fff 88%,#ffffffee);padding:2px 0 10px;margin:0 -2px 8px}
+.forest-categories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0}
+.forest-category{border:1px solid var(--line);border-radius:13px;background:#fff;padding:10px 5px;color:var(--ink);font-weight:800;font-size:12px;line-height:1.35;min-height:62px}
+.forest-category small{display:block;color:var(--muted);font-size:10px;font-weight:500;margin-top:4px}
+.forest-category.active{background:#edf4ed;border:2px solid var(--sage);padding:9px 4px;color:#55775e}
+.forest-start{display:flex;align-items:center;gap:10px;background:linear-gradient(120deg,#8eae98,#759b82);color:#fff;border-radius:15px;padding:12px 14px;width:100%;text-align:left;font-weight:800}
+.forest-start small{display:block;font-weight:500;font-size:11px;opacity:.92;margin-top:3px}
+.forest-start .action-icon{font-size:22px}
+.forest-count{font-size:12px;color:var(--muted);margin:7px 2px 0}
+.word-card.compact{padding:11px;margin:8px 0}
+.word-card.compact .jp{font-size:25px;margin:5px 0}
+.word-card.compact .word-example{margin-top:8px}
+.quiz-shell .h1{margin-bottom:8px}.quiz-topline{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin:8px 0}.quiz-shell .choices{gap:9px}.quiz-shell .choice{padding:14px;border-radius:14px;font-size:14px}.quiz-shell .quiz-exit{display:none}
+@media(max-width:360px){.map-card{min-height:108px;padding:11px}.map-card .map-icon{font-size:25px}.forest-hero{padding:13px}}
+
+
+/* Kotori 2.7.1: cleaner study screens and fixed quiz layout */
+.app{position:relative}
+.page-back{position:absolute;top:calc(62px + env(safe-area-inset-top));left:12px;z-index:8;width:38px;height:38px;border-radius:50%;background:#fff;color:var(--ink);border:1px solid var(--line);font-size:25px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px #624c5b12}
+body.quiz-mode{overflow:hidden;height:100dvh}
+body.quiz-mode .app{height:100dvh;min-height:0;overflow:hidden}
+body.quiz-mode .nav,body.quiz-mode footer{display:none}
+body.quiz-mode header.compact-header{display:flex}
+body.quiz-mode main{height:calc(100dvh - 58px - env(safe-area-inset-top));min-height:0;overflow:hidden;padding:50px 16px 14px;display:flex;flex-direction:column;justify-content:flex-start;gap:5px}
+body.quiz-mode .page-back{top:calc(62px + env(safe-area-inset-top))}
+body.quiz-mode main .h1{font-size:20px;margin:2px 0 5px}
+body.quiz-mode main .muted{font-size:12px;line-height:1.35}
+body.quiz-mode main .panel{margin:7px 0;padding:13px}
+body.quiz-mode main .choices{gap:7px;margin:7px 0}
+body.quiz-mode main .choice{padding:11px 12px;font-size:14px}
+body.quiz-mode main .btn{margin-top:6px;padding:10px 13px}
+body.quiz-mode main .feedback{padding:9px;margin-top:5px;font-size:12px}
+.kana-face{position:relative}
+.kana-bookmark{position:absolute;right:10px;top:10px;width:36px;height:36px;border-radius:11px;background:#fff;border:1px solid var(--line);color:var(--rose);font-size:20px;display:flex;align-items:center;justify-content:center}
+.kana-bookmark.saved{background:#f4e5e9;color:#a45d7a}
+.grammar-pattern{font-size:34px!important;line-height:1.35;margin:14px 0 18px!important;color:#624c5b}
+.grammar-example{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px;margin-top:20px}
+.grammar-example .jp{font-size:23px!important;margin:5px 0 8px}
+.grammar-nav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.grammar-nav .btn{margin-top:0}
+
+
+/* Kotori 2.7.2: compact universal status bar and consistent navigation */
+header.compact-header{padding:calc(9px + env(safe-area-inset-top)) 16px 9px;min-height:58px;gap:12px;background:#fbf3f4}
+.level-progress{display:grid;grid-template-columns:auto minmax(65px,1fr) auto;align-items:center;gap:9px;flex:1;min-width:0}
+.level-label{font-size:12px;font-weight:800;white-space:nowrap;color:#705568}
+.xp-track{height:9px;border-radius:20px;background:#eadfe4;overflow:hidden;min-width:45px}
+.xp-track i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#9dbda3,#77a486);transition:width .25s}
+.xp-count{font-size:10px;color:#887681;white-space:nowrap;font-variant-numeric:tabular-nums}
+.coin-pill{background:#fff;border:1px solid #eee2e5;border-radius:18px;padding:7px 11px;font-size:12px;white-space:nowrap}
+.brand,.sub,.mascot{display:none!important}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%;margin-top:10px}
+.nav-pair .btn{margin:0;min-width:0}
+.grammar-pattern-box{background:#f8edf2;border:1px solid #e8cbd8;border-radius:16px;padding:15px 12px;margin:12px 0}
+.grammar-pattern{font-size:30px!important;line-height:1.45;margin:5px 0 10px!important;color:#604456;letter-spacing:.3px}
+.grammar-token{display:inline-block;border-radius:7px;padding:1px 5px;margin:0 1px}
+.grammar-token.noun{background:#f8dce8;color:#a34f76}
+.grammar-token.particle{background:#dceee0;color:#477a58}
+.grammar-token.ending{background:#e8e0f4;color:#705b9a}
+.grammar-legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.grammar-legend .tag{font-size:10px}
+.grammar-example{background:#eef5f8;border:1px solid #d4e4eb;border-radius:15px;padding:15px;margin-top:14px}
+.grammar-example .eyebrow{color:#648494}
+.grammar-example .jp{color:#345f70;font-size:23px!important;margin:8px 0}
+.grammar-example .muted{text-align:center;color:#68818b}
+.pinned-list{display:grid;gap:8px;margin-top:12px}
+.pinned-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.pinned-item .pin-text{flex:1;min-width:0}
+.pinned-item .pin-text b{display:block}
+.pinned-item .pin-text small{color:var(--muted);font-size:11px}
+.pin-remove{background:#f7edf0;color:#9d657e;border-radius:9px;padding:7px 9px;font-size:11px}
+
+
+/* Kotori 2.8.2: streamlined chapter flow and focused study pages */
+body.study-focus header,body.study-focus.quiz-mode header.compact-header{display:none}
+body.study-focus main{padding-top:64px}
+body.study-focus .page-back{top:calc(10px + env(safe-area-inset-top))}
+body.quiz-mode .app{height:100dvh;min-height:0}
+body.quiz-mode main{height:100dvh;padding-top:58px}
+/* Kotori 2.8.1: fixed app viewport; scroll only inside content when genuinely needed */
+@media(min-width:600px){body{padding:0}.app{height:100dvh;min-height:0;border-radius:0}.nav{bottom:0;border-radius:0}}
+body.study-focus main{padding-bottom:28px}
+body.quiz-mode main{overflow:hidden;touch-action:pan-y}
+body.quiz-mode .page-back{top:calc(10px + env(safe-area-inset-top))}
+.world-intro{padding:16px;border-radius:21px;background:linear-gradient(135deg,#f8e9ef,#eef4e9);border:1px solid var(--line);margin:8px 0 14px}
+.world-intro .world-title{font-size:18px;font-weight:850;margin-bottom:4px}
+.world-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.world-card{position:relative;min-height:150px;border:1px solid var(--line);border-radius:19px;padding:13px 12px;text-align:left;color:var(--ink);display:flex;flex-direction:column;gap:5px;overflow:hidden;box-shadow:0 3px 10px #624c5b08}
+.world-card.kana{background:linear-gradient(145deg,#fff8fa,#f8e9ef)}.world-card.vocab{background:linear-gradient(145deg,#fbfff9,#eaf2e8)}.world-card.grammar{background:linear-gradient(145deg,#fffdf7,#f5efdf)}.world-card.conversation{background:linear-gradient(145deg,#fffaf4,#f8eee4)}.world-card.manga{background:linear-gradient(145deg,#fbf9ff,#eee9f7)}.world-card.jlpt{background:linear-gradient(145deg,#f7fbff,#e8f0f7)}
+.world-card .world-icon{font-size:29px}.world-card strong{font-size:13px}.world-card small{font-size:10px;color:var(--muted);line-height:1.35}.world-card .world-progress{height:5px;background:#ffffffb8;border-radius:9px;overflow:hidden;margin-top:auto}.world-card .world-progress i{display:block;height:100%;background:var(--sage)}.world-card .world-count{font-size:10px;color:#806e77}
+.area-hero{padding:17px;border:1px solid var(--line);border-radius:20px;margin:8px 0 14px;background:linear-gradient(135deg,#fbf1f3,#f2f5ed)}.area-hero .area-icon{font-size:38px}.area-hero h2{font-size:20px;margin:5px 0}.chapter-card{display:flex;align-items:center;gap:12px;width:100%;padding:13px;margin:9px 0;border:1px solid var(--line);border-radius:16px;background:#fff;color:var(--ink);text-align:left}.chapter-card:disabled{opacity:.55;background:#f8f6f5}.chapter-number{width:38px;height:38px;flex:0 0 38px;border-radius:13px;background:#f5e9ed;display:grid;place-items:center;font-weight:800;color:#936b7d}.chapter-card.done .chapter-number{background:#e9f2e9;color:#63856a}.chapter-info{flex:1;min-width:0}.chapter-info b{display:block;font-size:13px}.chapter-info small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.chapter-state{font-size:11px;color:var(--muted)}.chapter-node{display:flex;gap:11px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:14px;margin:9px 0;background:#fff}.chapter-node .node-icon{font-size:22px}.chapter-node .node-copy{flex:1}.chapter-node b{font-size:13px}.chapter-node small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.chapter-complete{background:#edf5ed;border:1px solid #d8e8d8;border-radius:16px;padding:14px;margin-top:16px}.chapter-complete .btn{margin-top:8px}
+@media(max-width:360px){.world-grid{gap:8px}.world-card{min-height:142px;padding:11px}}
+
+.row-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:10px 0}\n
+/* Kotori 2.8.3: five-column kana grid and consistent chapter lesson-to-test flow */
+.kana-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+.kana-mode-card{background:linear-gradient(145deg,#fff,#fbf4f5);border:1px solid var(--line);border-radius:18px;padding:20px 12px;display:flex;flex-direction:column;align-items:center;gap:7px;color:var(--ink);min-height:145px}
+.kana-mode-card span{font-size:32px}.kana-mode-card b{font-size:17px}.kana-mode-card small{font-size:11px;line-height:1.45;color:var(--muted);text-align:center}
+.kana-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:12px 0 16px}
+.kana-square{min-width:0;aspect-ratio:1/1;background:#fff;border:1px solid var(--line);border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--ink);box-shadow:0 2px 5px #624c5b08}
+.kana-square span{font-size:clamp(23px,7vw,30px);font-weight:800;line-height:1.15}.kana-square small{font-size:10px;color:var(--muted)}.kana-square.active{background:#edf5ed;border:2px solid var(--sage);transform:scale(.97)}
+.kana-detail{background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0;text-align:center}.kana-detail-main{display:flex;align-items:center;justify-content:center;gap:14px}.kana-detail-main b{font-size:42px}.kana-detail-main span{font-size:20px;font-weight:700;color:var(--rose)}.kana-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kana-detail-actions .btn{margin-top:8px;padding:10px 7px;font-size:12px}
+.chapter-study-cta{background:#f8f2f3;border:1px solid var(--line);border-radius:16px;padding:14px;margin:18px 0}.chapter-study-cta .btn{margin-top:8px}

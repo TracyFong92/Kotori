@@ -1,7 +1,9 @@
-const CACHE_NAME = 'kotori-academy-v28-4';
+const CACHE_NAME = 'kotori-academy-v28-4-structure1';
 const CORE_ASSETS = [
   './',
   './index.html',
+  './css/app.css',
+  './js/app.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
