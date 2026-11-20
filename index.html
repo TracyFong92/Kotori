@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Kotori 日語學園">
-<title>Kotori 日本語學園 2.8.2</title>
+<title>Kotori 日本語學園 2.8.3</title>
 <style>
 :root{--pink:#f4e5e9;--rose:#bd8da2;--ink:#624c5b;--cream:#fbf7f0;--sage:#8eae98;--muted:#8d7d83;--line:#eadfe2;--white:#fff}
 *{box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}body{margin:0;background:#f8f5f2;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif;touch-action:pan-y}
@@ -127,7 +127,18 @@ body.quiz-mode .page-back{top:calc(10px + env(safe-area-inset-top))}
 .area-hero{padding:17px;border:1px solid var(--line);border-radius:20px;margin:8px 0 14px;background:linear-gradient(135deg,#fbf1f3,#f2f5ed)}.area-hero .area-icon{font-size:38px}.area-hero h2{font-size:20px;margin:5px 0}.chapter-card{display:flex;align-items:center;gap:12px;width:100%;padding:13px;margin:9px 0;border:1px solid var(--line);border-radius:16px;background:#fff;color:var(--ink);text-align:left}.chapter-card:disabled{opacity:.55;background:#f8f6f5}.chapter-number{width:38px;height:38px;flex:0 0 38px;border-radius:13px;background:#f5e9ed;display:grid;place-items:center;font-weight:800;color:#936b7d}.chapter-card.done .chapter-number{background:#e9f2e9;color:#63856a}.chapter-info{flex:1;min-width:0}.chapter-info b{display:block;font-size:13px}.chapter-info small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.chapter-state{font-size:11px;color:var(--muted)}.chapter-node{display:flex;gap:11px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:14px;margin:9px 0;background:#fff}.chapter-node .node-icon{font-size:22px}.chapter-node .node-copy{flex:1}.chapter-node b{font-size:13px}.chapter-node small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.chapter-complete{background:#edf5ed;border:1px solid #d8e8d8;border-radius:16px;padding:14px;margin-top:16px}.chapter-complete .btn{margin-top:8px}
 @media(max-width:360px){.world-grid{gap:8px}.world-card{min-height:142px;padding:11px}}
 
-.row-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:10px 0}\n</style>
+.row-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:10px 0}\n
+/* Kotori 2.8.3: five-column kana grid and consistent chapter lesson-to-test flow */
+.kana-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+.kana-mode-card{background:linear-gradient(145deg,#fff,#fbf4f5);border:1px solid var(--line);border-radius:18px;padding:20px 12px;display:flex;flex-direction:column;align-items:center;gap:7px;color:var(--ink);min-height:145px}
+.kana-mode-card span{font-size:32px}.kana-mode-card b{font-size:17px}.kana-mode-card small{font-size:11px;line-height:1.45;color:var(--muted);text-align:center}
+.kana-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:12px 0 16px}
+.kana-square{min-width:0;aspect-ratio:1/1;background:#fff;border:1px solid var(--line);border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--ink);box-shadow:0 2px 5px #624c5b08}
+.kana-square span{font-size:clamp(23px,7vw,30px);font-weight:800;line-height:1.15}.kana-square small{font-size:10px;color:var(--muted)}.kana-square.active{background:#edf5ed;border:2px solid var(--sage);transform:scale(.97)}
+.kana-detail{background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0;text-align:center}.kana-detail-main{display:flex;align-items:center;justify-content:center;gap:14px}.kana-detail-main b{font-size:42px}.kana-detail-main span{font-size:20px;font-weight:700;color:var(--rose)}.kana-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kana-detail-actions .btn{margin-top:8px;padding:10px 7px;font-size:12px}
+.chapter-study-cta{background:#f8f2f3;border:1px solid var(--line);border-radius:16px;padding:14px;margin:18px 0}.chapter-study-cta .btn{margin-top:8px}
+
+</style>
 </head>
 <body>
 <div class="app">
@@ -162,16 +173,18 @@ state.smartReview=state.smartReview&&typeof state.smartReview==='object'?state.s
 state.smartReviewLog=Array.isArray(state.smartReviewLog)?state.smartReviewLog:[];
 state.smartReviewRewardDate=state.smartReviewRewardDate||'';
 state.adaptiveLevel=Number.isInteger(state.adaptiveLevel)?Math.max(1,Math.min(4,state.adaptiveLevel)):1;
-// 2.8.2 chapter data is additive; never replace existing learning records.
+// 2.8.3 chapter data is additive; never replace existing learning records.
 state.chapterCompleted=Array.isArray(state.chapterCompleted)?state.chapterCompleted:[];
 state.chapterVisited=state.chapterVisited&&typeof state.chapterVisited==='object'?state.chapterVisited:{};
 state.selectedArea=typeof state.selectedArea==='string'?state.selectedArea:'kana';
 state.currentChapter=Number.isInteger(state.currentChapter)?state.currentChapter:0;
 state.chapterReturnKey=typeof state.chapterReturnKey==='string'?state.chapterReturnKey:'';
-let page='home',qIndex=0,selected='',answered=false,showHint=true,storyChoice=0,kanaMode='hiragana',reviewRevealed=false;
+let page='home',qIndex=0,selected='',answered=false,showHint=true,storyChoice=0,kanaMode='hiragana',reviewRevealed=false,kanaActivity='choose',kanaSelected=null;
 let kanaQuiz={items:[],index:0,selected:-1,answered:false,score:0,finished:false};
 let vocabQuiz={items:[],index:0,selected:-1,answered:false,score:0,finished:false,wrong:[]};
 let vocab25Quiz={mode:'listen',items:[],index:0,selected:-1,answered:false,score:0,finished:false,wrong:[]};
+let chapterQuiz={items:[],index:0,selected:-1,answered:false,score:0,finished:false,wrong:[],key:''};
+state.chapterRewards=state.chapterRewards&&typeof state.chapterRewards==='object'?state.chapterRewards:{};
 const dailyTasks=[
  {id:'kana',icon:'🔤',title:'五十音暖身',time:'4 分鐘',page:'kanaPage',desc:'複習幾個平假名或片假名'},
  {id:'vocab',icon:'🌳',title:'單字練習',time:'5 分鐘',page:'vocabPage',desc:'認讀生活常用詞彙'},
@@ -198,7 +211,8 @@ function addToReview(type,key,front,reading,meaning){
  else state.reviewItems.push({id,type,front,reading,meaning,dueAt:Date.now(),interval:1,reps:0});
  save();alert('已加入記憶補給站！下次可以在「記憶補給站」集中複習。');
 }
-function toggleKanaBookmark(mode,kana,reading,meaning){const id='kana:'+mode+':'+kana;const i=state.reviewItems.findIndex(x=>x.id===id);if(i>=0)state.reviewItems.splice(i,1);else state.reviewItems.push({id,type:'kana',front:kana,reading,meaning,dueAt:Date.now(),interval:1,reps:0});save();render()}
+function toggleKanaBookmark(mode,kana,reading,meaning){const main=document.getElementById('main'),top=main?main.scrollTop:0;const id='kana:'+mode+':'+kana;const i=state.reviewItems.findIndex(x=>x.id===id);if(i>=0)state.reviewItems.splice(i,1);else state.reviewItems.push({id,type:'kana',front:kana,reading,meaning,dueAt:Date.now(),interval:1,reps:0});save();render();const next=document.getElementById('main');if(next)next.scrollTop=top}
+function selectKanaSquare(kana){const main=document.getElementById('main'),top=main?main.scrollTop:0;kanaSelected=kana;speakJapanese(kana);render();const next=document.getElementById('main');if(next)next.scrollTop=top}
 function reviewDue(){return state.reviewItems.filter(x=>x.dueAt<=Date.now())}
 function revealReview(){reviewRevealed=true;renderReview(document.getElementById('main'))}
 function reviewMark(id,known){const item=state.reviewItems.find(x=>x.id===id);if(!item)return;item.reps=(item.reps||0)+1;item.interval=known?Math.min(30,Math.max(3,(item.interval||1)*2)):1;item.dueAt=Date.now()+item.interval*86400000;reviewRevealed=false;save();renderReview(document.getElementById('main'))}
@@ -268,20 +282,54 @@ const comics=[
 function save(){localStorage.setItem(KEY,JSON.stringify(state));updateStats()}
 function updateStats(){const level=1+Math.floor(state.xp/100),within=state.xp%100;document.getElementById('coins').textContent=state.coins;document.getElementById('level').textContent='Lv.'+level;const cur=document.getElementById('xpCurrent'),goal=document.getElementById('xpGoal'),fill=document.getElementById('xpFill');if(cur)cur.textContent=within;if(goal)goal.textContent='100';if(fill)fill.style.width=within+'%'}
 function addReward(id,xp=10,coins=3){if(!state.completed.includes(id)){state.completed.push(id);state.xp+=xp;state.coins+=coins;save()}}
-function isQuizPage(p){return ['lesson','kanaQuiz','vocabQuiz','vocab25Quiz','smartReview'].includes(p);}
-function pageBackTarget(p){if(p==='chapter')return 'area';if(p==='area')return 'map';if(state.chapterReturnKey&&!['map','home','area','chapter'].includes(p))return 'chapter';return p==='kanaQuiz'?'kanaPage':(['vocabQuiz','vocab25Quiz','smartReview'].includes(p)?'vocabPage':'map')}
+function isQuizPage(p){return ['lesson','kanaQuiz','vocabQuiz','vocab25Quiz','smartReview','chapterQuiz'].includes(p);}
+function pageBackTarget(p){if(p==='chapter')return 'area';if(p==='area')return 'map';if(p==='chapterQuiz')return areaById(state.selectedArea).lessonPage;if(state.chapterReturnKey&&!['map','home','area','chapter'].includes(p))return 'chapter';return p==='kanaQuiz'?'kanaPage':(['vocabQuiz','vocab25Quiz','smartReview'].includes(p)?'vocabPage':'map')}
 function setPage(p){if(['kanaQuiz','vocabQuiz'].includes(page)&&p!==page&&state.chapterChallengeActive&&p!=='chapter')state.chapterChallengeActive='';if(['map','home','area'].includes(p)){state.chapterReturnKey='';if(p!=='chapter')state.chapterChallengeActive='';save()}page=p;document.body.classList.toggle('quiz-mode',isQuizPage(p));document.body.classList.toggle('study-focus',!['home','map'].includes(p));const active=['area','chapter'].includes(p)?'map':p;document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===active));render()}
 function chapterKey(areaId,index){return areaId+':'+index}
 function areaById(id){return learningAreas.find(a=>a.id===id)||learningAreas[0]}
 function areaDoneCount(areaId){return [0,1,2].filter(i=>state.chapterCompleted.includes(chapterKey(areaId,i))).length}
 function openArea(areaId){state.selectedArea=areaId;save();setPage('area')}
-function openChapter(index){const a=areaById(state.selectedArea);if(index>0&&!state.chapterCompleted.includes(chapterKey(a.id,index-1)))return;state.currentChapter=index;const key=chapterKey(a.id,index);if(a.id==='kana'){state.chapterReturnKey=key;state.chapterChallengeActive=key;state.chapterVisited[key]=state.chapterVisited[key]||{};state.chapterVisited[key].lesson=true;save();setPage('kanaPage');return;}save();setPage('chapter')}
-function openChapterActivity(kind){const a=areaById(state.selectedArea),idx=state.currentChapter,key=chapterKey(a.id,idx);state.chapterReturnKey=key;state.chapterVisited[key]=state.chapterVisited[key]||{};if(kind==='lesson'){state.chapterVisited[key].lesson=true;save();setPage(a.lessonPage);return;}if(a.id==='kana'||a.id==='vocab'){state.chapterChallengeActive=key;save();if(a.id==='kana'){startKanaQuiz();return;}startVocabQuiz(false);return;}state.chapterVisited[key].challenge=true;save();setPage(a.lessonPage)}
-function completeActiveChapterChallenge(){const key=state.chapterChallengeActive;if(!key)return;state.chapterVisited[key]=state.chapterVisited[key]||{};state.chapterVisited[key].challenge=true;if(key.startsWith('kana:')&&!state.chapterCompleted.includes(key))state.chapterCompleted.push(key);state.chapterChallengeActive='';save()}
+function openChapter(index){const a=areaById(state.selectedArea);if(index>0&&!state.chapterCompleted.includes(chapterKey(a.id,index-1)))return;state.currentChapter=index;const key=chapterKey(a.id,index);state.chapterReturnKey=key;state.chapterChallengeActive=key;state.chapterVisited[key]=state.chapterVisited[key]||{};state.chapterVisited[key].lesson=true;if(a.id==='kana'){kanaActivity='choose';kanaSelected=null;}save();setPage(a.lessonPage)}
+function openChapterActivity(kind){const a=areaById(state.selectedArea),idx=state.currentChapter,key=chapterKey(a.id,idx);state.chapterReturnKey=key;state.chapterChallengeActive=key;state.chapterVisited[key]=state.chapterVisited[key]||{};if(kind==='lesson'){state.chapterVisited[key].lesson=true;save();if(a.id==='kana')kanaActivity='choose';setPage(a.lessonPage);return;}startChapterQuiz()}
+function completeActiveChapterChallenge(){const key=state.chapterChallengeActive;if(!key)return;state.chapterVisited[key]=state.chapterVisited[key]||{};state.chapterVisited[key].challenge=true;if(!state.chapterCompleted.includes(key))state.chapterCompleted.push(key);state.chapterChallengeActive='';save()}
 function completeChapter(){const a=areaById(state.selectedArea),idx=state.currentChapter,key=chapterKey(a.id,idx),seen=state.chapterVisited[key]||{};if(!seen.lesson||!seen.challenge)return;if(!state.chapterCompleted.includes(key))state.chapterCompleted.push(key);state.chapterReturnKey='';state.chapterChallengeActive='';save();setPage('area')}
 function renderArea(m){const a=areaById(state.selectedArea),done=areaDoneCount(a.id),next=a.chapters.findIndex((c,i)=>!state.chapterCompleted.includes(chapterKey(a.id,i)));m.innerHTML=`<div class="eyebrow">LEARNING REGION · ${a.en.toUpperCase()}</div><div class="area-hero"><div class="area-icon">${a.icon}</div><h2>${a.name}</h2><div class="muted">${a.desc}</div><div class="progress" style="margin-top:12px"><i style="width:${done/3*100}%"></i></div><div class="muted" style="margin-top:6px">已完成 ${done} / 3 個章節</div></div><div class="section-title">章節旅程 · Chapters</div>${a.chapters.map((c,i)=>{const isDone=state.chapterCompleted.includes(chapterKey(a.id,i)),unlocked=i===0||state.chapterCompleted.includes(chapterKey(a.id,i-1)),active=!isDone&&unlocked;return `<button class="chapter-card ${isDone?'done':''}" ${unlocked?`onclick="openChapter(${i})"`:'disabled'}><span class="chapter-number">${isDone?'✓':String(i+1).padStart(2,'0')}</span><span class="chapter-info"><b>${c[0]}</b><small>${c[1]}</small></span><span class="chapter-state">${isDone?'已完成':active?'開始 ›':'🔒 未解鎖'}</span></button>`}).join('')}<div class="muted" style="margin:12px 2px">完成上一章的課程與挑戰，即可解鎖下一章。每個區域的學習進度會分開保存。</div>`}
 
 
+function chapterQuestionPool(){
+ const area=areaById(state.selectedArea),idx=state.currentChapter;
+ let pool=[];
+ if(area.id==='grammar'){
+  const cards=grammarCards;
+  cards.forEach(c=>{pool.push({prompt:c[0],sub:'選出句型的意思',correct:c[2],why:c[3]});pool.push({prompt:c[1],sub:'這句日文的意思是？',correct:c[2],why:c[3]});});
+ }else if(area.id==='conversation'){
+  const phrases=[['こんにちは','你好／午安'],['よろしくお願いします','請多多指教'],['はい、そうです','是的，沒錯'],['いいえ、違います','不，不是'],['わたしは学生です','我是學生'],['友達','朋友'],['先生','老師'],['学校','學校'],['好き','喜歡'],['ありがとう','謝謝']];
+  pool=phrases.map(x=>({prompt:x[0],sub:'選出最合適的中文意思',correct:x[1],why:'留意日常對話中的常用表達。'}));
+ }else if(area.id==='manga'){
+  pool=comics.concat([['わたしはミカです。','我是 Mika。','わたしは…です 是自我介紹句型。'],['日本語は難しいですか？','日文很難嗎？','ですか 用於禮貌提問。'],['わたしは学生です。','我是學生。','学生（がくせい）是學生。'],['わたしは先生じゃありません。','我不是老師。','じゃありません 是禮貌否定。'],['学校へ行きます。','去學校。','学校（がっこう）是學校。'],['友達','朋友','友達（ともだち）是朋友。'],['先生','老師','先生（せんせい）是老師。']]).map(x=>({prompt:x[0],sub:'選出這句話的意思',correct:x[1],why:x[2]}));
+ }else if(area.id==='jlpt'){
+  pool=vocabCards.map(w=>({prompt:w[0],sub:'選出正確的中文意思',correct:w[2],why:w[0]+'（'+w[1]+'）＝'+w[2]}));
+  grammarCards.forEach(c=>pool.push({prompt:c[1],sub:'選出句子的意思',correct:c[2],why:c[3]}));
+ }else{
+  let words=vocabCards.slice(idx*10,idx*10+10);if(words.length<5)words=vocabCards.slice(0,10);
+  pool=words.map(w=>({prompt:w[0],sub:'選出正確的中文意思',correct:w[2],why:w[0]+'（'+w[1]+'）＝'+w[2]}));
+ }
+ return pool;
+}
+function startChapterQuiz(){
+ const pool=chapterQuestionPool();if(!pool.length){alert('這個章節的測驗內容正在準備中。');return;}
+ const all=chapterQuestionPool(),selected=shuffleArray(all).slice(0,Math.min(10,all.length));
+ chapterQuiz={items:selected.map(q=>{const choices=areaById(state.selectedArea).id==='grammar'?grammarCards.map(x=>x[2]):areaById(state.selectedArea).id==='conversation'?['你好／午安','請多多指教','是的，沒錯','不，不是','我是學生','朋友','老師','學校','喜歡','謝謝']:areaById(state.selectedArea).id==='manga'?comics.map(x=>x[1]).concat(['我是 Mika。','日文很難嗎？','我是學生。','我不是老師。','去學校。','朋友','老師']):areaById(state.selectedArea).id==='jlpt'?vocabCards.map(x=>x[2]).concat(grammarCards.map(x=>x[2])):vocabCards.map(x=>x[2]);const opts=shuffleArray([q.correct,...shuffleArray(choices.filter(x=>x!==q.correct)).slice(0,3)]);return {...q,opts,answer:opts.indexOf(q.correct)};}),index:0,selected:-1,answered:false,score:0,finished:false,wrong:[],key:state.chapterReturnKey};
+ setPage('chapterQuiz');
+}
+function answerChapterQuiz(i){if(chapterQuiz.answered)return;chapterQuiz.selected=i;chapterQuiz.answered=true;if(i===chapterQuiz.items[chapterQuiz.index].answer)chapterQuiz.score++;else chapterQuiz.wrong.push(chapterQuiz.items[chapterQuiz.index]);render();}
+function nextChapterQuiz(){chapterQuiz.index++;chapterQuiz.selected=-1;chapterQuiz.answered=false;if(chapterQuiz.index>=chapterQuiz.items.length)finishChapterQuiz();else render();}
+function finishChapterQuiz(){chapterQuiz.finished=true;const pass=chapterQuiz.score>=Math.ceil(chapterQuiz.items.length*.7);if(pass){completeActiveChapterChallenge();if(!state.chapterRewards[chapterQuiz.key]){state.xp+=10;state.coins+=3;state.chapterRewards[chapterQuiz.key]=true;}}save();render();}
+function renderChapterQuiz(m){
+ const pass=chapterQuiz.score>=Math.ceil(chapterQuiz.items.length*.7);
+ if(chapterQuiz.finished){m.innerHTML=`<div class="eyebrow">CHAPTER CHALLENGE · RESULT</div><div class="h1">${pass?'本章完成！🌸':'再試一次吧！🌱'}</div><div class="panel" style="text-align:center"><div style="font-size:48px">${pass?'🏆':'🌱'}</div><div class="jp" style="font-size:36px">${chapterQuiz.score} / ${chapterQuiz.items.length}</div><b>${pass?'よくできました！做得很好！':'未達到 7 成正確率'}</b><div class="muted">${pass?'本章已自動完成，下一章已解鎖。':`還差 ${Math.ceil(chapterQuiz.items.length*.7)-chapterQuiz.score} 題便可通過。`}</div></div>${pass?'<div class="feedback">🎉 獲得 +10 XP 及 +3 金幣！</div>':`<button class="btn" onclick="startChapterQuiz()">重新挑戰</button>`}<button class="btn secondary" onclick="setPage('area')">返回章節地圖</button>`;return;}
+ const q=chapterQuiz.items[chapterQuiz.index];m.innerHTML=`<div class="quiz-shell"><div class="eyebrow">CHAPTER CHALLENGE</div><div class="h1">${areaById(state.selectedArea).challenge} 🎯</div><div class="quiz-topline"><span>第 ${chapterQuiz.index+1} / ${chapterQuiz.items.length} 題</span><span>答對 ${chapterQuiz.score} 題</span></div><div class="progress"><i style="width:${chapterQuiz.index/chapterQuiz.items.length*100}%"></i></div><div class="panel" style="text-align:center;padding:22px"><div class="muted">${q.sub}</div><div class="jp" style="font-size:30px;margin:16px 0">${q.prompt}</div></div><div class="choices">${q.opts.map((o,i)=>`<button class="choice ${chapterQuiz.answered&&i===q.answer?'correct':''} ${chapterQuiz.answered&&i===chapterQuiz.selected&&i!==q.answer?'wrong':''}" ${chapterQuiz.answered?'disabled':''} onclick="answerChapterQuiz(${i})">${'ABCD'[i]}. ${o}</button>`).join('')}</div>${chapterQuiz.answered?`<div class="feedback ${chapterQuiz.selected===q.answer?'':'bad'}">${chapterQuiz.selected===q.answer?'🎉 正確！':'再記住這個內容！'}<br>${q.why}</div><button class="btn" onclick="nextChapterQuiz()">${chapterQuiz.index===chapterQuiz.items.length-1?'查看結果':'下一題 →'}</button>`:''}</div>`;
+}
 function renderChapter(m){const a=areaById(state.selectedArea),i=state.currentChapter,c=a.chapters[i],key=chapterKey(a.id,i),seen=state.chapterVisited[key]||{},done=state.chapterCompleted.includes(key);const challengeLabel=a.challenge;m.innerHTML=`<div class="eyebrow">${a.en.toUpperCase()} · CHAPTER ${i+1}</div><div class="h1">${c[0]}</div><div class="muted">${c[1]}。完成課程內容及挑戰後，可以解鎖下一章。</div><div class="panel"><div style="font-size:32px;text-align:center">${a.icon}</div><b>${a.name}</b><div class="muted">本章包含一個學習課程和一個練習挑戰。</div></div><div class="section-title">本章學習節點</div><button class="chapter-node" onclick="openChapterActivity('lesson')"><span class="node-icon">📖</span><span class="node-copy"><b>學習課程</b><small>${a.id==='kana'?'認讀假名及發音':a.id==='vocab'?'學習常用單字及例句':a.id==='grammar'?'閱讀句型、例句及解釋':a.id==='conversation'?'進行情境日語對話':a.id==='manga'?'閱讀日語短篇內容':'查看 JLPT 學習範圍'}</small></span><span class="tag">${seen.lesson?'已完成':'開始'}</span></button><button class="chapter-node" onclick="openChapterActivity('challenge')"><span class="node-icon">🎯</span><span class="node-copy"><b>${challengeLabel}</b><small>完成一項應用或挑戰活動</small></span><span class="tag">${seen.challenge?'已通過':'開始'}</span></button><div class="chapter-complete"><b>${done?'✓ 本章已完成':'完成條件'}</b><div class="muted">${seen.lesson&&seen.challenge?'✓ 課程及挑戰均已完成，可以解鎖下一章。':'① 先開啟課程；② 再完成挑戰（五十音測驗需答對至少 7/10）；③ 返回此頁按下完成。'}</div><button class="btn" ${seen.lesson&&seen.challenge&&!done?'':'disabled'} onclick="completeChapter()">${done?'已完成':'完成本章並解鎖下一章'}</button></div>`}
 
 function render(){
@@ -305,14 +353,18 @@ function render(){
  else if(page==='chapter')renderChapter(m);
  else if(page==='lesson')renderLesson(m);
  else if(page==='kanaQuiz')renderKanaQuiz(m);
+ else if(page==='chapterQuiz')renderChapterQuiz(m);
  else if(page==='kanaPage'){
- const list=kanaMode==='hiragana'?hiragana:katakana; const idx=state.kanaIndex%list.length;
- m.innerHTML=`<div class="eyebrow">KANA GARDEN</div><div class="h1">五十音花園 🌷</div><div class="muted">平假名及片假名各有 46 個基本字母。每天複習幾個，慢慢建立熟悉感。</div>
- <div class="choices"><button class="choice ${kanaMode==='hiragana'?'selected':''}" onclick="kanaMode='hiragana';state.kanaIndex=0;render()">平假名 ひらがな</button><button class="choice ${kanaMode==='katakana'?'selected':''}" onclick="kanaMode='katakana';state.kanaIndex=0;render()">片假名 カタカナ</button></div>
- <div class="panel kana-face" style="text-align:center"><button class="kana-bookmark ${state.reviewItems.some(x=>x.id==='kana:'+kanaMode+':'+list[idx][0])?'saved':''}" aria-label="加入複習" title="加入複習" onclick='toggleKanaBookmark("${kanaMode}","${list[idx][0]}","${list[idx][1]}","${list[idx][2]}")'>${state.reviewItems.some(x=>x.id==='kana:'+kanaMode+':'+list[idx][0])?'▮':'▯'}</button><div class="jp" style="font-size:58px">${list[idx][0]}</div><div style="font-size:22px;font-weight:700">${list[idx][1]}</div><div class="muted">${list[idx][2]}</div></div>
- <div class="muted" style="text-align:center">${idx+1} / ${list.length}</div>
- <div class="row-actions"><button class="btn secondary" onclick="state.kanaIndex=(state.kanaIndex-1+${list.length})%${list.length};save();render()">← 上一個</button><button class="btn" onclick="if(state.chapterChallengeActive&&state.kanaIndex===${list.length-1}){startKanaQuiz()}else{state.kanaIndex=(state.kanaIndex+1)%${list.length};save();render()}">${state.chapterChallengeActive&&state.kanaIndex===list.length-1?'完成學習・開始測驗 →':'下一個 →'}</button></div><button class="btn secondary" onclick="markDaily('kana')">完成今日五十音任務 +5 XP</button>
- ${!state.chapterChallengeActive?'<button class="btn" onclick="startKanaQuiz()">開始測驗 →</button>':''}${state.chapterReturnKey?'<div class="muted" style="text-align:center;margin-top:8px">看完全部假名後，按「完成學習・開始測驗」進入測驗；答對至少 7 / 10 題便會自動完成本章並解鎖下一章。</div>':''}<button class="btn secondary" onclick="setPage('map')">返回地圖</button>`;
+ const list=kanaMode==='hiragana'?hiragana:katakana;
+ if(kanaActivity==='choose'){
+  m.innerHTML=`<div class="eyebrow">KANA GARDEN</div><div class="h1">五十音花園 🌷</div><div class="muted">你可以先瀏覽假名，亦可以直接開始測驗。無須逐個假名完成。</div><div class="kana-mode-grid"><button class="kana-mode-card" onclick="kanaActivity='study';kanaSelected=null;render()"><span>📖</span><b>學習</b><small>以五格一行的方式瀏覽全部假名</small></button><button class="kana-mode-card" onclick="kanaActivity='test';startKanaQuiz()"><span>✏️</span><b>測驗</b><small>直接開始 10 題隨機挑戰</small></button></div><div class="choices"><button class="choice ${kanaMode==='hiragana'?'selected':''}" onclick="kanaMode='hiragana';render()">平假名 ひらがな</button><button class="choice ${kanaMode==='katakana'?'selected':''}" onclick="kanaMode='katakana';render()">片假名 カタカナ</button></div><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
+ }else{
+  const selected=list.find(x=>x[0]===kanaSelected);
+  m.innerHTML=`<div class="eyebrow">KANA GARDEN · ${kanaMode==='hiragana'?'HIRAGANA':'KATAKANA'}</div><div class="h1">${kanaMode==='hiragana'?'平假名':'片假名'} 🌷</div><div class="choices" style="grid-template-columns:1fr 1fr"><button class="choice ${kanaMode==='hiragana'?'selected':''}" onclick="kanaMode='hiragana';kanaSelected=null;render()">平假名</button><button class="choice ${kanaMode==='katakana'?'selected':''}" onclick="kanaMode='katakana';kanaSelected=null;render()">片假名</button></div>
+  <div class="kana-grid">${list.map(x=>`<button class="kana-square ${kanaSelected===x[0]?'active':''}" onclick='selectKanaSquare("${x[0]}")'><span>${x[0]}</span><small>${x[1]}</small></button>`).join('')}</div>
+  ${selected?`<div class="kana-detail"><div class="kana-detail-main"><b>${selected[0]}</b><span>${selected[1]}</span></div><div class="muted">例子：${selected[2]}</div><div class="kana-detail-actions"><button class="btn" onclick='speakJapanese("${selected[0]}")'>🔊 重播發音</button><button class="btn secondary" onclick='toggleKanaBookmark("${kanaMode}","${selected[0]}","${selected[1]}","${selected[2]}")'>${state.reviewItems.some(x=>x.id==='kana:'+kanaMode+':'+selected[0])?'✓ 已收藏':'＋ 收藏'}</button></div></div>`:'<div class="muted" style="text-align:center;margin:10px 0">點擊任何假名方格，即時聆聽發音。</div>'}
+  <button class="btn" onclick="kanaActivity='choose';kanaSelected=null;render()">返回學習／測驗選擇</button><button class="btn secondary" onclick="setPage('map')">返回學習地圖</button>`;
+ }
  }
  else if(page==='vocabPage')renderVocabForest(m);
  else if(page==='vocabQuiz')renderVocabQuiz(m);
@@ -346,6 +398,7 @@ function render(){
  <div class="statgrid"><div class="statbox"><strong>${state.xp}</strong><span class="muted">累積 XP</span></div><div class="statbox"><strong>${state.coins}</strong><span class="muted">金幣</span></div><div class="statbox"><strong>${state.completed.length}</strong><span class="muted">完成任務</span></div><div class="statbox"><strong>25 分</strong><span class="muted">每日目標</span></div></div>
  <div class="section-title">今日學習</div><div class="panel muted">已完成 ${state.dailyDone.length} / ${dailyTasks.length} 項每日任務<br>記憶補給站：${state.reviewItems.length} 張收藏卡</div><div class="section-title">你的學習設定</div><div class="panel muted">五十音：大部分認得，持續複習<br>學習模式：遊戲＋故事情節<br>目標：日常溝通、漫畫、動漫、JLPT、聽力及發音<br>漢字：逐步減少中文提示</div>
  <button class="btn secondary" onclick="if(confirm('確定要清除這部裝置上的學習紀錄嗎？')){localStorage.removeItem(KEY);location.reload()}">重設學習紀錄</button>`;
+ if(state.chapterReturnKey && page===areaById(state.selectedArea).lessonPage && page!=='kanaPage'){m.insertAdjacentHTML('beforeend',`<div class="chapter-study-cta"><div class="muted">完成本章內容後，直接進入章節測驗；答對 7 成或以上便會自動解鎖下一章。</div><button class="btn" onclick="startChapterQuiz()">完成學習・開始測驗 →</button></div>`);}
  if(page!=='home'&&page!=='map'){const backTarget=pageBackTarget(page);m.insertAdjacentHTML('afterbegin',`<button class="page-back" aria-label="返回" onclick="setPage('${backTarget}')">‹</button>`);}
  pairNavigationButtons(m);
  document.body.classList.toggle('quiz-mode',isQuizPage(page));
@@ -412,7 +465,7 @@ function renderVocabForest(m){
  const stats=Object.values(state.vocab25Stats),mastered=stats.filter(x=>x&&x.correct>=3).length;
  const words=allKotoriWords();
  const smartDone=words.filter(w=>smartStat(w).attempts>0).length;
- m.innerHTML=`<div class="eyebrow">VOCABULARY FOREST · VERSION 2.8.2</div><div class="h1">單字森林 🌳</div>
+ m.innerHTML=`<div class="eyebrow">VOCABULARY FOREST · VERSION 2.8.3</div><div class="h1">單字森林 🌳</div>
  <div class="forest-hero"><div class="forest-hero-top"><h2>今日學習挑戰</h2><span class="tag">🐤 Kotori 推薦</span></div><button class="forest-action" style="background:#a77f93;margin:0 0 10px" onclick="setPage('reviewPage')"><span class="action-icon">🔖</span><span>我的收藏／釘選單字<small>${state.reviewItems.length} 張卡片 · 假名及單字都在這裏</small></span><span style="margin-left:auto;font-size:20px">›</span></button><p>由智能複習開始，系統會按你的記憶情況安排單字。</p><button class="forest-action" onclick="setPage('smartReview')"><span class="action-icon">✨</span><span>開始智能複習<small>60 個單字 · 自動調整難度</small></span><span style="margin-left:auto;font-size:20px">›</span></button>
  <div class="challenge-row"><button class="challenge-mini" onclick="startVocab25Quiz('listen')">🎧 聆聽挑戰<small>10 題 · 聽音辨字</small></button><button class="challenge-mini" onclick="startVocab25Quiz('sentence')">📖 句子挑戰<small>10 題 · 理解例句</small></button></div>
  <div class="progress"><i style="width:${smartDone/60*100}%"></i></div><div class="muted" style="margin-top:6px">已練習 ${smartDone} / 60 個單字</div></div>
@@ -452,7 +505,7 @@ function finishVocab25Quiz(){
 function renderVocab25Quiz(m){
  if(vocab25Quiz.finished){const pass=vocab25Quiz.score>=7;m.innerHTML=`<div class="eyebrow">KOTORI 2.5 · RESULT</div><div class="h1">${vocab25Quiz.mode==='listen'?'聽力':'例句理解'}測驗完成！🌸</div><div class="panel" style="text-align:center"><div style="font-size:46px">${pass?'🏆':'🌱'}</div><div class="jp">${vocab25Quiz.score} / 10</div><b>${pass?'よくできました！做得很好！':'もう一度頑張ろう！再試一次吧！'}</b><div class="muted">答對 ${vocab25Quiz.score} 題；答錯 ${vocab25Quiz.wrong.length} 題。</div></div>${vocab25Quiz.unlocked?'<div class="feedback">🎉 成功解鎖下一個單字區域！</div>':''}${vocab25Quiz.rewarded?'<div class="feedback">🎁 首次達到 7/10，獲得 +5 XP 及 +2 金幣！</div>':'<div class="muted">答對 7 題或以上可領取每日首次獎勵（每種測驗每日一次）。</div>'}<button class="btn" onclick="setPage('vocabPage')">返回單字森林</button>`;return;}
  const q=vocab25Quiz.items[vocab25Quiz.index],listen=vocab25Quiz.mode==='listen';
- m.innerHTML=`<div class="quiz-shell"><div class="eyebrow">KOTORI 2.8.2 · CHALLENGE</div><div class="h1">${listen?'聆聽挑戰 🎧':'句子挑戰 📖'}</div><div class="quiz-topline"><span>第 ${vocab25Quiz.index+1} / 10 題</span><span>答對 ${vocab25Quiz.score} 題</span></div><div class="progress"><i style="width:${vocab25Quiz.index/10*100}%"></i></div><div class="panel" style="text-align:center;padding:22px">${listen?`<div class="muted">按喇叭聆聽日語，再選出聽到的單字</div><button class="speak-btn" style="width:58px;height:58px;font-size:25px;margin:16px" onclick="speakJapanese(vocab25Quiz.items[vocab25Quiz.index].word.jp)">🔊</button>`:`<div class="muted">請選出以下日文句子的正確意思</div><div class="jp" style="font-size:24px">${q.word.example}</div><div class="reading">${q.word.exampleReading}</div>`}</div><div class="choices">${q.opts.map((o,i)=>`<button class="choice ${vocab25Quiz.answered&&i===q.answer?'correct':''} ${vocab25Quiz.answered&&i===vocab25Quiz.selected&&i!==q.answer?'wrong':''}" ${vocab25Quiz.answered?'disabled':''} onclick="answerVocab25Quiz(${i})">${'ABCD'[i]}. ${o}</button>`).join('')}</div>${vocab25Quiz.answered?`<div class="feedback ${vocab25Quiz.selected===q.answer?'':'bad'}"><b>${vocab25Quiz.selected===q.answer?'🎉 正確！':'再記住這個單字！'}</b><br>${q.word.jp}（${q.word.reading}）＝${q.word.meaning}<br>${q.word.example}<br>${q.word.exampleMeaning}</div><button class="btn" onclick="nextVocab25Quiz()">${vocab25Quiz.index===9?'查看測驗結果':'下一題 →'}</button>`:''}</div>`;
+ m.innerHTML=`<div class="quiz-shell"><div class="eyebrow">KOTORI 2.8.3 · CHALLENGE</div><div class="h1">${listen?'聆聽挑戰 🎧':'句子挑戰 📖'}</div><div class="quiz-topline"><span>第 ${vocab25Quiz.index+1} / 10 題</span><span>答對 ${vocab25Quiz.score} 題</span></div><div class="progress"><i style="width:${vocab25Quiz.index/10*100}%"></i></div><div class="panel" style="text-align:center;padding:22px">${listen?`<div class="muted">按喇叭聆聽日語，再選出聽到的單字</div><button class="speak-btn" style="width:58px;height:58px;font-size:25px;margin:16px" onclick="speakJapanese(vocab25Quiz.items[vocab25Quiz.index].word.jp)">🔊</button>`:`<div class="muted">請選出以下日文句子的正確意思</div><div class="jp" style="font-size:24px">${q.word.example}</div><div class="reading">${q.word.exampleReading}</div>`}</div><div class="choices">${q.opts.map((o,i)=>`<button class="choice ${vocab25Quiz.answered&&i===q.answer?'correct':''} ${vocab25Quiz.answered&&i===vocab25Quiz.selected&&i!==q.answer?'wrong':''}" ${vocab25Quiz.answered?'disabled':''} onclick="answerVocab25Quiz(${i})">${'ABCD'[i]}. ${o}</button>`).join('')}</div>${vocab25Quiz.answered?`<div class="feedback ${vocab25Quiz.selected===q.answer?'':'bad'}"><b>${vocab25Quiz.selected===q.answer?'🎉 正確！':'再記住這個單字！'}</b><br>${q.word.jp}（${q.word.reading}）＝${q.word.meaning}<br>${q.word.example}<br>${q.word.exampleMeaning}</div><button class="btn" onclick="nextVocab25Quiz()">${vocab25Quiz.index===9?'查看測驗結果':'下一題 →'}</button>`:''}</div>`;
 }
 function renderVocab25Stats(m){
  const entries=vocab25Cards.map(w=>({word:w,stat:state.vocab25Stats[w.jp]||{correct:0,attempts:0}}));
@@ -491,7 +544,7 @@ function answerVocabQuiz(i){
 function nextVocabQuiz(){vocabQuiz.index++;vocabQuiz.selected=-1;vocabQuiz.answered=false;if(vocabQuiz.index>=vocabQuiz.items.length)finishVocabQuiz();else render();}
 function finishVocabQuiz(){
  vocabQuiz.finished=true;
- completeActiveChapterChallenge();
+ if(vocabQuiz.score>=7)completeActiveChapterChallenge();
  if(!vocabQuiz.mistakesOnly && vocabQuiz.score>=8 && state.vocabStage<3){state.vocabStage++;vocabQuiz.unlocked=true;}
  const today=localDayKey();
  if(vocabQuiz.score>=7 && state.vocabQuizRewardDate!==today){state.xp+=10;state.coins+=3;state.vocabQuizRewardDate=today;vocabQuiz.rewarded=true;}
