@@ -104,11 +104,20 @@ function renderChapterQuiz(m){
 function renderChapter(m){const a=areaById(state.selectedArea),i=state.currentChapter,c=a.chapters[i],key=chapterKey(a.id,i),seen=state.chapterVisited[key]||{},done=state.chapterCompleted.includes(key);const challengeLabel=a.challenge;m.innerHTML=`<div class="eyebrow">${a.en.toUpperCase()} · CHAPTER ${i+1}</div><div class="h1">${c[0]}</div><div class="muted">${c[1]}。完成課程內容及挑戰後，可以解鎖下一章。</div><div class="panel"><div style="font-size:32px;text-align:center">${a.icon}</div><b>${a.name}</b><div class="muted">本章包含一個學習課程和一個練習挑戰。</div></div><div class="section-title">本章學習節點</div><button class="chapter-node" onclick="openChapterActivity('lesson')"><span class="node-icon">📖</span><span class="node-copy"><b>學習課程</b><small>${a.id==='kana'?'認讀假名及發音':a.id==='vocab'?'學習常用單字及例句':a.id==='grammar'?'閱讀句型、例句及解釋':a.id==='conversation'?'進行情境日語對話':a.id==='manga'?'閱讀日語短篇內容':'查看 JLPT 學習範圍'}</small></span><span class="tag">${seen.lesson?'已完成':'開始'}</span></button><button class="chapter-node" onclick="openChapterActivity('challenge')"><span class="node-icon">🎯</span><span class="node-copy"><b>${challengeLabel}</b><small>完成一項應用或挑戰活動</small></span><span class="tag">${seen.challenge?'已通過':'開始'}</span></button><div class="chapter-complete"><b>${done?'✓ 本章已完成':'完成條件'}</b><div class="muted">${seen.lesson&&seen.challenge?'✓ 課程及挑戰均已完成，可以解鎖下一章。':'① 先開啟課程；② 再完成挑戰（五十音測驗需答對至少 7/10）；③ 返回此頁按下完成。'}</div><button class="btn" ${seen.lesson&&seen.challenge&&!done?'':'disabled'} onclick="completeChapter()">${done?'已完成':'完成本章並解鎖下一章'}</button></div>`}
 
 function getResumeChapter(){
- // Resume the first visited chapter that has not been completed; this reads existing progress only.
+ // Prefer a chapter the learner has already opened and not completed.
  for(const area of learningAreas){
   for(let index=0;index<area.chapters.length;index++){
    const key=chapterKey(area.id,index),visited=state.chapterVisited[key];
-   if(visited&&!state.chapterCompleted.includes(key))return {area,index,key};
+   if(visited&&!state.chapterCompleted.includes(key))return {area,index,key,isResume:true};
+  }
+ }
+ // If no unfinished chapter has been recorded yet, offer the first unlocked chapter.
+ // This is a display/navigation fallback and does not alter saved learning data.
+ for(const area of learningAreas){
+  for(let index=0;index<area.chapters.length;index++){
+   const key=chapterKey(area.id,index);
+   const unlocked=index===0||state.chapterCompleted.includes(chapterKey(area.id,index-1));
+   if(unlocked&&!state.chapterCompleted.includes(key))return {area,index,key,isResume:false};
   }
  }
  return null;
@@ -122,7 +131,7 @@ function render(){
  <div class="panel welcome" style="padding:14px 16px"><div class="bird">🐤</div><div><b>Kotori 說：</b><div class="muted">今日も一緒に日本語を勉強しよう！</div></div></div>
  <div class="panel" style="padding:14px 16px;margin:12px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b>今日進度</b><span class="tag">${pct}%</span></div>
  <div class="progress" style="margin:10px 0 7px"><i style="width:${pct}%"></i></div><div class="muted">${done} / ${dailyTasks.length} 項每日任務完成</div></div>
- ${resume?`<div class="panel resume-card" style="padding:14px 16px;margin:12px 0"><div class="resume-heading"><b>繼續上次學習 📖</b><span class="tag">進行中</span></div><div class="resume-title">${resume.area.icon} ${resume.area.name} · ${resume.area.chapters[resume.index][0]}</div><div class="muted">接續你已開始的章節，完成課程與挑戰即可解鎖下一章。</div><button class="btn" style="margin-top:12px" onclick="state.selectedArea='${resume.area.id}';openChapter(${resume.index})">繼續學習 →</button></div>`:''}
+ ${resume?`<div class="panel resume-card" style="padding:14px 16px;margin:12px 0"><div class="resume-heading"><b>${resume.isResume?'繼續上次學習 📖':'開始學習 📖'}</b><span class="tag">${resume.isResume?'進行中':'推薦課程'}</span></div><div class="resume-title">${resume.area.icon} ${resume.area.name} · ${resume.area.chapters[resume.index][0]}</div><div class="muted">${resume.isResume?'接續你已開始的章節，完成課程與挑戰即可解鎖下一章。':'還沒有未完成的章節，從這個已解鎖課程開始吧！'}</div><button class="btn" style="margin-top:12px" onclick="state.selectedArea='${resume.area.id}';openChapter(${resume.index})">${resume.isResume?'繼續學習':'開始學習'} →</button></div>`:''}
  <div class="panel" style="padding:14px 16px;margin:12px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b>智能複習 🧠</b><span class="tag">獨立學習</span></div><div class="muted" style="margin-top:6px">${dueSmart?`目前有 ${dueSmart} 個單字需要複習`:'依照你的記憶狀態安排單字'}</div><button class="btn" style="margin-top:12px" onclick="startSmartReview(false)">開始智能複習 · 約 10 題</button></div>
  <div class="section-title">每日學習路線</div>
  ${dailyTasks.map(t=>{const completed=state.dailyDone.includes(t.id);return `<div class="tile" style="gap:10px;padding:12px 10px;margin:8px 0"><span class="emoji">${t.icon}</span><span style="flex:1;min-width:0"><strong>${t.title}</strong><small>${t.time} · ${completed?'今日已完成':t.desc}</small></span><button class="btn secondary" style="width:auto;min-width:66px;margin:0;padding:8px 10px" onclick="openDailyTask('${t.page}')">${completed?'再練習':'開始'}</button></div>`}).join('')}
