@@ -116,7 +116,7 @@ function render(){
  <div class="section-title">每日學習路線</div>
  ${dailyTasks.map(t=>{const completed=state.dailyDone.includes(t.id);return `<div class="tile" style="gap:10px;padding:12px 10px;margin:8px 0"><span class="emoji">${t.icon}</span><span style="flex:1;min-width:0"><strong>${t.title}</strong><small>${t.time} · ${completed?'今日已完成':t.desc}</small></span><button class="btn secondary" style="width:auto;min-width:66px;margin:0;padding:8px 10px" onclick="openDailyTask('${t.page}')">${completed?'再練習':'開始'}</button></div>`}).join('')}
  <div class="panel" style="padding:14px 16px"><b>記憶補給站</b><div class="muted">收藏 ${state.reviewItems.length} 張卡 · 到期 ${reviewDue().length} 張</div><button class="btn secondary" onclick="setPage('reviewPage')">查看收藏複習 →</button></div>
- <button class="btn secondary" onclick="setPage('map')">學習地圖</button>`;
+`;
  }
  else if(page==='map'){
  const totalDone=learningAreas.reduce((n,a)=>n+areaDoneCount(a.id),0);
