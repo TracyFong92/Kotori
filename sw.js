@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'kotori-academy-v28-6-forest1';
+const CACHE_NAME = 'kotori-academy-v28-7-forest-learning1';
 
 const CORE_ASSETS = [
   './',
@@ -8,6 +8,7 @@ const CORE_ASSETS = [
   './js/data/content.js',
   './js/core/storage.js',
   './js/features/forest.js',
+  './js/features/forest-learning.js',
   './js/app.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
