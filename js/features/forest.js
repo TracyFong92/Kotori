@@ -18,7 +18,7 @@ function renderVocabForest(m){
  const weak=active.filter(w=>{const x=smartStat(w);return x.attempts>0&&x.streak===0;}).length;
  const practiced=active.filter(w=>smartStat(w).attempts>0).length;
  const mastered=active.filter(w=>{const x=smartStat(w);return x.streak>=3&&x.correct>=4;}).length;
- m.innerHTML=`<div class="eyebrow">VOCABULARY FOREST · VERSION 2.8.7</div><div class="h1">單字森林 🌳</div>
+ m.innerHTML=`<div class="eyebrow">VOCABULARY FOREST · VERSION 2.8.8</div><div class="h1">單字森林 🌳</div>
  <div class="panel" style="margin:8px 0 12px"><div class="forest-hero-top"><b>🐤 今日單字進度</b><span class="tag">${practiced}/${active.length} 已練習</span></div><div class="progress" style="margin:9px 0 6px"><i style="width:${active.length?practiced/active.length*100:0}%"></i></div><div class="muted">本分類有 ${due} 個到期複習、${weak} 個需要加強、${mastered} 個已熟練。</div></div>
  <div class="forest-sticky"><div class="muted" style="font-weight:800;color:var(--ink)">先選擇想學習的分類</div><div class="forest-categories">${categories.map(c=>`<button class="forest-category ${vocabForestCategory===c?'active':''}" ${counts[c]===0?'disabled':''} onclick="vocabForestCategory='${c}';render()">${c}<small>${counts[c]} 個單字</small></button>`).join('')}</div>
  <button class="forest-start" onclick="startSmartReview(false,vocabForestCategory)"><span class="action-icon">✨</span><span>智能複習＋測驗<small>${due?`${due} 個到期單字優先出題`:weak?`${weak} 個需要加強的單字優先出題`:'按記憶狀態安排本分類測驗'} · 約 10 題</small></span><span style="margin-left:auto;font-size:20px">›</span></button>
