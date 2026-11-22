@@ -4,6 +4,7 @@ let state=JSON.parse(localStorage.getItem(KEY)||'{"xp":0,"coins":0,"completed":[
 state.reviewItems=Array.isArray(state.reviewItems)?state.reviewItems:[];
 state.dailyDate=state.dailyDate||new Date().toLocaleDateString('en-CA');
 state.dailyDone=Array.isArray(state.dailyDone)?state.dailyDone:[];
+state.dailyChapterMissionDate=typeof state.dailyChapterMissionDate==='string'?state.dailyChapterMissionDate:'';
 state.reviewIndex=Number.isInteger(state.reviewIndex)?state.reviewIndex:0;
 state.vocabMistakes=Array.isArray(state.vocabMistakes)?state.vocabMistakes:[];
 state.vocabStage=Math.max(1,Math.min(3,Number(state.vocabStage)||1));
@@ -62,8 +63,8 @@ function areaDoneCount(areaId){return [0,1,2].filter(i=>state.chapterCompleted.i
 function openArea(areaId){state.selectedArea=areaId;save();setPage('area')}
 function openChapter(index){const a=areaById(state.selectedArea);if(index>0&&!state.chapterCompleted.includes(chapterKey(a.id,index-1)))return;state.currentChapter=index;const key=chapterKey(a.id,index);state.chapterReturnKey=key;state.chapterChallengeActive=key;state.chapterVisited[key]=state.chapterVisited[key]||{};state.chapterVisited[key].lesson=true;if(a.id==='kana'){kanaActivity='choose';kanaSelected=null;}save();setPage(a.lessonPage)}
 function openChapterActivity(kind){const a=areaById(state.selectedArea),idx=state.currentChapter,key=chapterKey(a.id,idx);state.chapterReturnKey=key;state.chapterChallengeActive=key;state.chapterVisited[key]=state.chapterVisited[key]||{};if(kind==='lesson'){state.chapterVisited[key].lesson=true;save();if(a.id==='kana')kanaActivity='choose';setPage(a.lessonPage);return;}startChapterQuiz()}
-function completeActiveChapterChallenge(){const key=state.chapterChallengeActive;if(!key)return;state.chapterVisited[key]=state.chapterVisited[key]||{};state.chapterVisited[key].challenge=true;if(!state.chapterCompleted.includes(key))state.chapterCompleted.push(key);state.chapterChallengeActive='';save()}
-function completeChapter(){const a=areaById(state.selectedArea),idx=state.currentChapter,key=chapterKey(a.id,idx),seen=state.chapterVisited[key]||{};if(!seen.lesson||!seen.challenge)return;if(!state.chapterCompleted.includes(key))state.chapterCompleted.push(key);state.chapterReturnKey='';state.chapterChallengeActive='';save();setPage('area')}
+function completeActiveChapterChallenge(){const key=state.chapterChallengeActive;if(!key)return;state.chapterVisited[key]=state.chapterVisited[key]||{};state.chapterVisited[key].challenge=true;if(!state.chapterCompleted.includes(key))state.chapterCompleted.push(key);state.dailyChapterMissionDate=localDayKey();state.chapterChallengeActive='';save()}
+function completeChapter(){const a=areaById(state.selectedArea),idx=state.currentChapter,key=chapterKey(a.id,idx),seen=state.chapterVisited[key]||{};if(!seen.lesson||!seen.challenge)return;if(!state.chapterCompleted.includes(key))state.chapterCompleted.push(key);state.dailyChapterMissionDate=localDayKey();state.chapterReturnKey='';state.chapterChallengeActive='';save();setPage('area')}
 function renderArea(m){const a=areaById(state.selectedArea),done=areaDoneCount(a.id),next=a.chapters.findIndex((c,i)=>!state.chapterCompleted.includes(chapterKey(a.id,i)));m.innerHTML=`<div class="eyebrow">LEARNING REGION · ${a.en.toUpperCase()}</div><div class="area-hero"><div class="area-icon">${a.icon}</div><h2>${a.name}</h2><div class="muted">${a.desc}</div><div class="progress" style="margin-top:12px"><i style="width:${done/3*100}%"></i></div><div class="muted" style="margin-top:6px">已完成 ${done} / 3 個章節</div></div><div class="section-title">章節旅程 · Chapters</div>${a.chapters.map((c,i)=>{const isDone=state.chapterCompleted.includes(chapterKey(a.id,i)),unlocked=i===0||state.chapterCompleted.includes(chapterKey(a.id,i-1)),active=!isDone&&unlocked;return `<button class="chapter-card ${isDone?'done':''}" ${unlocked?`onclick="openChapter(${i})"`:'disabled'}><span class="chapter-number">${isDone?'✓':String(i+1).padStart(2,'0')}</span><span class="chapter-info"><b>${c[0]}</b><small>${c[1]}</small></span><span class="chapter-state">${isDone?'已完成':active?'開始 ›':'🔒 未解鎖'}</span></button>`}).join('')}<div class="muted" style="margin:12px 2px">完成上一章的課程與挑戰，即可解鎖下一章。每個區域的學習進度會分開保存。</div>`}
 
 
@@ -120,24 +121,20 @@ function getResumeChapter(){
    if(unlocked&&!state.chapterCompleted.includes(key))return {area,index,key,isResume:false};
   }
  }
- // If every chapter is already marked complete, keep the home learning entry available.
- // Re-enter the first chapter without changing or resetting saved progress.
- const area=learningAreas[0];
- return {area,index:0,key:chapterKey(area.id,0),isResume:false};
+ return null;
 }
 function render(){
  const m=document.getElementById('main');
  if(page==='home'){
  ensureDaily();
- const done=state.dailyDone.length, pct=Math.round(done/dailyTasks.length*100),dueSmart=smartDueWords().length,resume=getResumeChapter();
+ const missionDone=state.dailyChapterMissionDate===localDayKey(),pct=missionDone?100:0,dueSmart=smartDueWords().length,resume=getResumeChapter();
  m.innerHTML=`<div class="eyebrow">YOUR DAILY ADVENTURE</div><div class="h1">おかえりなさい！🌸</div>
  <div class="panel welcome" style="padding:14px 16px"><div class="bird">🐤</div><div><b>Kotori 說：</b><div class="muted">今日も一緒に日本語を勉強しよう！</div></div></div>
  <div class="panel" style="padding:14px 16px;margin:12px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b>今日進度</b><span class="tag">${pct}%</span></div>
- <div class="progress" style="margin:10px 0 7px"><i style="width:${pct}%"></i></div><div class="muted">${done} / ${dailyTasks.length} 項每日任務完成</div></div>
+ <div class="progress" style="margin:10px 0 7px"><i style="width:${pct}%"></i></div><div class="muted">${missionDone?'今日章節任務已完成':'今日目標：完成一個學習章節'}</div></div>
  ${resume?`<div class="panel resume-card" style="padding:14px 16px;margin:12px 0"><div class="resume-heading"><b>${resume.isResume?'繼續上次學習 📖':'開始學習 📖'}</b><span class="tag">${resume.isResume?'進行中':'推薦課程'}</span></div><div class="resume-title">${resume.area.icon} ${resume.area.name} · ${resume.area.chapters[resume.index][0]}</div><div class="muted">${resume.isResume?'接續你已開始的章節，完成課程與挑戰即可解鎖下一章。':'還沒有未完成的章節，從這個已解鎖課程開始吧！'}</div><button class="btn" style="margin-top:12px" onclick="state.selectedArea='${resume.area.id}';openChapter(${resume.index})">${resume.isResume?'繼續學習':'開始學習'} →</button></div>`:''}
  <div class="panel" style="padding:14px 16px;margin:12px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b>智能複習 🧠</b><span class="tag">獨立學習</span></div><div class="muted" style="margin-top:6px">${dueSmart?`目前有 ${dueSmart} 個單字需要複習`:'依照你的記憶狀態安排單字'}</div><button class="btn" style="margin-top:12px" onclick="startSmartReview(false)">開始智能複習 · 約 10 題</button></div>
- <div class="section-title">每日學習路線</div>
- ${dailyTasks.map(t=>{const completed=state.dailyDone.includes(t.id);return `<div class="tile" style="gap:10px;padding:12px 10px;margin:8px 0"><span class="emoji">${t.icon}</span><span style="flex:1;min-width:0"><strong>${t.title}</strong><small>${t.time} · ${completed?'今日已完成':t.desc}</small></span><button class="btn secondary" style="width:auto;min-width:66px;margin:0;padding:8px 10px" onclick="openDailyTask('${t.page}')">${completed?'再練習':'開始'}</button></div>`}).join('')}
+ <div class="panel mission-card" style="padding:14px 16px;margin:12px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b>今日任務 🎯</b><span class="tag">${missionDone?'已完成':'完成 1 個章節'}</span></div><div style="font-weight:700;margin-top:10px">${missionDone?'今日任務完成！明天再來迎接新挑戰。':resume?`${resume.area.icon} ${resume.area.name} · ${resume.area.chapters[resume.index][0]}`:'所有章節都已完成！'}</div><div class="muted" style="margin-top:6px">${missionDone?'你今天已完成一個學習章節，做得很好！':resume?'完成課程及挑戰，即可完成今日任務。':'你已完成目前所有章節，繼續複習也很棒。'}</div>${!missionDone&&resume?`<button class="btn" style="margin-top:12px" onclick="state.selectedArea='${resume.area.id}';openChapter(${resume.index})">開始今日任務 →</button>`:''}<div class="progress" style="margin-top:12px"><i style="width:${missionDone?100:0}%"></i></div><div class="muted" style="margin-top:6px">${missionDone?'1 / 1 個章節完成':'0 / 1 個章節完成'}</div></div>
  <div class="panel" style="padding:14px 16px"><b>記憶補給站</b><div class="muted">收藏 ${state.reviewItems.length} 張卡 · 到期 ${reviewDue().length} 張</div><button class="btn secondary" onclick="setPage('reviewPage')">查看收藏複習 →</button></div>
 `;
  }
