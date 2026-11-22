@@ -106,14 +106,16 @@ function render(){
  const m=document.getElementById('main');
  if(page==='home'){
  ensureDaily();
- const done=state.dailyDone.length, pct=Math.round(done/dailyTasks.length*100);
- m.innerHTML=`<div class="eyebrow">YOUR DAILY ADVENTURE</div><div class="h1">おかえりなさい！歡迎回來 🌸</div>
- <div class="panel welcome"><div class="bird">🐤</div><div><b>Kotori 說：</b><div class="muted">今日も一緒に日本語を勉強しよう！<br>今天也一起學日文吧！</div></div></div>
- <div class="section-title">今日的 20–30 分鐘學習路線</div><div class="muted">完成一項就會獲得 5 XP 和 2 金幣；每天每項只計算一次。</div>
- <div class="progress"><i style="width:${pct}%"></i></div><div class="muted" style="margin:7px 0 12px">今日進度：${done} / ${dailyTasks.length} 項（${pct}%）</div>
- ${dailyTasks.map(t=>`<div class="tile"><span class="emoji">${t.icon}</span><span style="flex:1"><strong>${t.title} ${state.dailyDone.includes(t.id)?'✓':''}</strong><small>${t.time} · ${t.desc}</small></span><button class="btn secondary" style="width:auto;margin:0;padding:8px 10px" onclick="setPage('${t.page}')">開始</button>${state.dailyDone.includes(t.id)?'<span class="tag">完成</span>':`<button class="btn" style="width:auto;margin:0;padding:8px 10px" onclick="markDaily('${t.id}')">完成</button>`}</div>`).join('')}
- <div class="panel"><b>記憶補給站</b><div class="muted">已收藏 ${state.reviewItems.length} 張複習卡 · 今日到期 ${reviewDue().length} 張</div><button class="btn secondary" onclick="setPage('reviewPage')">開始複習 →</button></div>
- <button class="btn secondary" onclick="setPage('map')">前往完整學習地圖</button>`;
+ const done=state.dailyDone.length, pct=Math.round(done/dailyTasks.length*100),dueSmart=smartDueWords().length;
+ m.innerHTML=`<div class="eyebrow">YOUR DAILY ADVENTURE</div><div class="h1">おかえりなさい！🌸</div>
+ <div class="panel welcome" style="padding:14px 16px"><div class="bird">🐤</div><div><b>Kotori 說：</b><div class="muted">今日も一緒に日本語を勉強しよう！</div></div></div>
+ <div class="panel" style="padding:14px 16px;margin:12px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b>今日のミッション · 今日學習</b><span class="tag">${pct}%</span></div>
+ <div class="progress" style="margin:10px 0 7px"><i style="width:${pct}%"></i></div><div class="muted">${done} / ${dailyTasks.length} 項完成</div>
+ <button class="btn" style="margin-top:12px" onclick="startSmartReview(false)">✨ 開始智能複習 · 約 10 題</button><div class="muted" style="margin-top:6px">${dueSmart?`有 ${dueSmart} 個單字需要複習`:'按記憶狀態安排今日單字'}</div></div>
+ <div class="section-title">每日學習路線</div>
+ ${dailyTasks.map(t=>{const completed=state.dailyDone.includes(t.id);return `<div class="tile" style="gap:10px;padding:12px 10px;margin:8px 0"><span class="emoji">${t.icon}</span><span style="flex:1;min-width:0"><strong>${t.title}</strong><small>${t.time} · ${completed?'今日已完成':t.desc}</small></span><button class="btn secondary" style="width:auto;min-width:66px;margin:0;padding:8px 10px" onclick="setPage('${t.page}')">${completed?'再練習':'開始'}</button></div>`}).join('')}
+ <div class="panel" style="padding:14px 16px"><b>記憶補給站</b><div class="muted">收藏 ${state.reviewItems.length} 張卡 · 到期 ${reviewDue().length} 張</div><button class="btn secondary" onclick="setPage('reviewPage')">查看收藏複習 →</button></div>
+ <button class="btn secondary" onclick="setPage('map')">學習地圖</button>`;
  }
  else if(page==='map'){
  const totalDone=learningAreas.reduce((n,a)=>n+areaDoneCount(a.id),0);
@@ -198,8 +200,11 @@ function finishKanaQuiz(){
  kanaQuiz.finished=true;
  if(kanaQuiz.score>=7)completeActiveChapterChallenge();
  const today=localDayKey();
- if(kanaQuiz.score>=7 && state.kanaQuizRewardDate!==today){state.xp+=10;state.coins+=3;state.kanaQuizRewardDate=today;kanaQuiz.rewarded=true;save();}
- else {kanaQuiz.rewarded=false;save();}
+ if(kanaQuiz.score>=7 && state.kanaQuizRewardDate!==today){state.xp+=10;state.coins+=3;state.kanaQuizRewardDate=today;kanaQuiz.rewarded=true;}
+ else {kanaQuiz.rewarded=false;}
+ // Completing the kana warm-up also completes its daily task, using the existing daily reward.
+ if(!state.dailyDone.includes('kana')){state.dailyDone.push('kana');state.xp+=5;state.coins+=2;}
+ save();
  render();
 }
 function renderKanaQuiz(m){
