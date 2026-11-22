@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'kotori-academy-v29-0-daily-home';
+const CACHE_NAME = 'kotori-academy-v29-0-daily-home-uxfix';
 
 const CORE_ASSETS = [
   './',
