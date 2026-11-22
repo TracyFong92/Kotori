@@ -1,31 +1,8 @@
-const KEY='kotori-jp-v1';
-let state=JSON.parse(localStorage.getItem(KEY)||'{"xp":0,"coins":0,"completed":[],"kanaIndex":0,"comicIndex":0,"storyDone":false}');
-// Extend old saved progress safely; keep the original storage key so XP and coins remain intact.
-state.reviewItems=Array.isArray(state.reviewItems)?state.reviewItems:[];
-state.dailyDate=state.dailyDate||new Date().toLocaleDateString('en-CA');
-state.dailyDone=Array.isArray(state.dailyDone)?state.dailyDone:[];
-state.reviewIndex=Number.isInteger(state.reviewIndex)?state.reviewIndex:0;
-state.vocabMistakes=Array.isArray(state.vocabMistakes)?state.vocabMistakes:[];
-state.vocabStage=Math.max(1,Math.min(3,Number(state.vocabStage)||1));
-state.vocab25Stage=Math.max(1,Math.min(3,Number(state.vocab25Stage)||1));
-state.vocab25Stats=state.vocab25Stats&&typeof state.vocab25Stats==='object'?state.vocab25Stats:{};
-state.vocab25Mistakes=Array.isArray(state.vocab25Mistakes)?state.vocab25Mistakes:[];
-state.smartReview=state.smartReview&&typeof state.smartReview==='object'?state.smartReview:{};
-state.smartReviewLog=Array.isArray(state.smartReviewLog)?state.smartReviewLog:[];
-state.smartReviewRewardDate=state.smartReviewRewardDate||'';
-state.adaptiveLevel=Number.isInteger(state.adaptiveLevel)?Math.max(1,Math.min(4,state.adaptiveLevel)):1;
-// 2.8.3 chapter data is additive; never replace existing learning records.
-state.chapterCompleted=Array.isArray(state.chapterCompleted)?state.chapterCompleted:[];
-state.chapterVisited=state.chapterVisited&&typeof state.chapterVisited==='object'?state.chapterVisited:{};
-state.selectedArea=typeof state.selectedArea==='string'?state.selectedArea:'kana';
-state.currentChapter=Number.isInteger(state.currentChapter)?state.currentChapter:0;
-state.chapterReturnKey=typeof state.chapterReturnKey==='string'?state.chapterReturnKey:'';
 let page='home',qIndex=0,selected='',answered=false,showHint=true,storyChoice=0,kanaMode='hiragana',reviewRevealed=false,kanaActivity='choose',kanaSelected=null,vocabForestCategory='日常生活';
 let kanaQuiz={items:[],index:0,selected:-1,answered:false,score:0,finished:false};
 let vocabQuiz={items:[],index:0,selected:-1,answered:false,score:0,finished:false,wrong:[]};
 let vocab25Quiz={mode:'listen',items:[],index:0,selected:-1,answered:false,score:0,finished:false,wrong:[]};
 let chapterQuiz={items:[],index:0,selected:-1,answered:false,score:0,finished:false,wrong:[],key:''};
-state.chapterRewards=state.chapterRewards&&typeof state.chapterRewards==='object'?state.chapterRewards:{};
 function localDayKey(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function ensureDaily(){const today=localDayKey();if(state.dailyDate!==today){state.dailyDate=today;state.dailyDone=[];save()}}
 function markDaily(id){ensureDaily();if(!state.dailyDone.includes(id)){state.dailyDone.push(id);state.xp+=5;state.coins+=2;save()}render()}
@@ -49,7 +26,6 @@ function renderReview(m){
  reviewRevealed=false;
  m.innerHTML=`<div class="eyebrow">SPACED REVIEW · ${idx+1} / ${due.length}</div><div class="h1">記憶補給站 🧠</div><div class="muted">先看日文卡片，在心中回想讀音和意思，再揭曉答案。</div><div class="panel" style="text-align:center"><div class="jp">${item.front}</div>${reviewRevealed?`<div class="reading">${item.reading||''}</div><div class="muted">${item.meaning||''}</div>`:'<div class="muted">先想一想，再按下方按鈕揭曉答案</div>'}</div><div class="muted">目前有 ${all} 張收藏卡；今日到期 ${due.length} 張。</div>${reviewRevealed?`<button class="btn secondary" onclick="reviewMark('${item.id}',false)">還不熟悉 · 明天再複習</button><button class="btn" onclick="reviewMark('${item.id}',true)">已經記得 · 延後複習</button>`:`<button class="btn" onclick="revealReview()">顯示答案</button>`}<div class="section-title">全部已收藏內容</div><div class="pinned-list">${pinned}</div><button class="btn secondary" onclick="markDaily('review')">完成今日複習任務 +5 XP</button><button class="btn secondary" onclick="setPage('vocabPage')">返回單字森林</button>`;
 }
-function save(){localStorage.setItem(KEY,JSON.stringify(state));updateStats()}
 function updateStats(){const level=1+Math.floor(state.xp/100),within=state.xp%100;document.getElementById('coins').textContent=state.coins;document.getElementById('level').textContent='Lv.'+level;const cur=document.getElementById('xpCurrent'),goal=document.getElementById('xpGoal'),fill=document.getElementById('xpFill');if(cur)cur.textContent=within;if(goal)goal.textContent='100';if(fill)fill.style.width=within+'%'}
 function addReward(id,xp=10,coins=3){if(!state.completed.includes(id)){state.completed.push(id);state.xp+=xp;state.coins+=coins;save()}}
 function isQuizPage(p){return ['lesson','kanaQuiz','vocabQuiz','vocab25Quiz','smartReview','chapterQuiz'].includes(p);}
