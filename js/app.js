@@ -20,7 +20,7 @@ state.chapterVisited=state.chapterVisited&&typeof state.chapterVisited==='object
 state.selectedArea=typeof state.selectedArea==='string'?state.selectedArea:'kana';
 state.currentChapter=Number.isInteger(state.currentChapter)?state.currentChapter:0;
 state.chapterReturnKey=typeof state.chapterReturnKey==='string'?state.chapterReturnKey:'';
-let page='home',qIndex=0,selected='',answered=false,showHint=true,storyChoice=0,kanaMode='hiragana',reviewRevealed=false,kanaActivity='choose',kanaSelected=null,vocabForestCategory='日常生活';
+let page='home',previousPage='home',dailyTaskFlow=false,qIndex=0,selected='',answered=false,showHint=true,storyChoice=0,kanaMode='hiragana',reviewRevealed=false,kanaActivity='choose',kanaSelected=null,vocabForestCategory='日常生活';
 let kanaQuiz={items:[],index:0,selected:-1,answered:false,score:0,finished:false};
 let vocabQuiz={items:[],index:0,selected:-1,answered:false,score:0,finished:false,wrong:[]};
 let vocab25Quiz={mode:'listen',items:[],index:0,selected:-1,answered:false,score:0,finished:false,wrong:[]};
@@ -28,7 +28,8 @@ let chapterQuiz={items:[],index:0,selected:-1,answered:false,score:0,finished:fa
 state.chapterRewards=state.chapterRewards&&typeof state.chapterRewards==='object'?state.chapterRewards:{};
 function localDayKey(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function ensureDaily(){const today=localDayKey();if(state.dailyDate!==today){state.dailyDate=today;state.dailyDone=[];save()}}
-function markDaily(id){ensureDaily();if(!state.dailyDone.includes(id)){state.dailyDone.push(id);state.xp+=5;state.coins+=2;save()}render()}
+function markDaily(id){ensureDaily();if(!state.dailyDone.includes(id)){state.dailyDone.push(id);state.xp+=5;state.coins+=2;save()}setPage('home')}
+function openDailyTask(p){dailyTaskFlow=true;setPage(p)}
 function addToReview(type,key,front,reading,meaning){
  const id=type+':'+key; const found=state.reviewItems.find(x=>x.id===id);
  if(found){found.dueAt=Date.now();found.front=front;found.reading=reading;found.meaning=meaning;}
@@ -53,8 +54,8 @@ function save(){localStorage.setItem(KEY,JSON.stringify(state));updateStats()}
 function updateStats(){const level=1+Math.floor(state.xp/100),within=state.xp%100;document.getElementById('coins').textContent=state.coins;document.getElementById('level').textContent='Lv.'+level;const cur=document.getElementById('xpCurrent'),goal=document.getElementById('xpGoal'),fill=document.getElementById('xpFill');if(cur)cur.textContent=within;if(goal)goal.textContent='100';if(fill)fill.style.width=within+'%'}
 function addReward(id,xp=10,coins=3){if(!state.completed.includes(id)){state.completed.push(id);state.xp+=xp;state.coins+=coins;save()}}
 function isQuizPage(p){return ['lesson','kanaQuiz','vocabQuiz','vocab25Quiz','smartReview','chapterQuiz'].includes(p);}
-function pageBackTarget(p){if(p==='chapter')return 'area';if(p==='area')return 'map';if(p==='chapterQuiz')return areaById(state.selectedArea).lessonPage;if(state.chapterReturnKey&&!['map','home','area','chapter'].includes(p))return 'chapter';return p==='kanaQuiz'?'kanaPage':(['vocabQuiz','vocab25Quiz','smartReview'].includes(p)?'vocabPage':'map')}
-function setPage(p){if(['kanaQuiz','vocabQuiz'].includes(page)&&p!==page&&state.chapterChallengeActive&&p!=='chapter')state.chapterChallengeActive='';if(['map','home','area'].includes(p)){state.chapterReturnKey='';if(p!=='chapter')state.chapterChallengeActive='';save()}page=p;document.body.classList.toggle('quiz-mode',isQuizPage(p));document.body.classList.toggle('study-focus',!['home','map'].includes(p));const active=['area','chapter'].includes(p)?'map':p;document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===active));render()}
+function pageBackTarget(p){if(dailyTaskFlow&&p!=='home'&&p!=='map')return 'home';if(p==='chapter')return 'area';if(p==='area')return 'map';if(p==='chapterQuiz')return areaById(state.selectedArea).lessonPage;if(state.chapterReturnKey&&!['map','home','area','chapter'].includes(p))return 'chapter';if(p==='kanaQuiz')return 'kanaPage';if(['vocabQuiz','vocab25Quiz','smartReview'].includes(p))return 'vocabPage';return previousPage&&previousPage!==p?previousPage:'home'}
+function setPage(p){if(['kanaQuiz','vocabQuiz'].includes(page)&&p!==page&&state.chapterChallengeActive&&p!=='chapter')state.chapterChallengeActive='';if(['map','home','area'].includes(p)){state.chapterReturnKey='';if(p!=='chapter')state.chapterChallengeActive='';save()}if(p!==page)previousPage=page;page=p;if(p==='home')dailyTaskFlow=false;document.body.classList.toggle('quiz-mode',isQuizPage(p));document.body.classList.toggle('study-focus',!['home','map'].includes(p));const active=['area','chapter'].includes(p)?'map':p;document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===active));render()}
 function chapterKey(areaId,index){return areaId+':'+index}
 function areaById(id){return learningAreas.find(a=>a.id===id)||learningAreas[0]}
 function areaDoneCount(areaId){return [0,1,2].filter(i=>state.chapterCompleted.includes(chapterKey(areaId,i))).length}
@@ -109,11 +110,11 @@ function render(){
  const done=state.dailyDone.length, pct=Math.round(done/dailyTasks.length*100),dueSmart=smartDueWords().length;
  m.innerHTML=`<div class="eyebrow">YOUR DAILY ADVENTURE</div><div class="h1">おかえりなさい！🌸</div>
  <div class="panel welcome" style="padding:14px 16px"><div class="bird">🐤</div><div><b>Kotori 說：</b><div class="muted">今日も一緒に日本語を勉強しよう！</div></div></div>
- <div class="panel" style="padding:14px 16px;margin:12px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b>今日のミッション · 今日學習</b><span class="tag">${pct}%</span></div>
- <div class="progress" style="margin:10px 0 7px"><i style="width:${pct}%"></i></div><div class="muted">${done} / ${dailyTasks.length} 項完成</div>
- <button class="btn" style="margin-top:12px" onclick="startSmartReview(false)">✨ 開始智能複習 · 約 10 題</button><div class="muted" style="margin-top:6px">${dueSmart?`有 ${dueSmart} 個單字需要複習`:'按記憶狀態安排今日單字'}</div></div>
+ <div class="panel" style="padding:14px 16px;margin:12px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b>今日進度</b><span class="tag">${pct}%</span></div>
+ <div class="progress" style="margin:10px 0 7px"><i style="width:${pct}%"></i></div><div class="muted">${done} / ${dailyTasks.length} 項每日任務完成</div></div>
+ <div class="panel" style="padding:14px 16px;margin:12px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b>智能複習 🧠</b><span class="tag">獨立學習</span></div><div class="muted" style="margin-top:6px">${dueSmart?`目前有 ${dueSmart} 個單字需要複習`:'依照你的記憶狀態安排單字'}</div><button class="btn" style="margin-top:12px" onclick="startSmartReview(false)">開始智能複習 · 約 10 題</button></div>
  <div class="section-title">每日學習路線</div>
- ${dailyTasks.map(t=>{const completed=state.dailyDone.includes(t.id);return `<div class="tile" style="gap:10px;padding:12px 10px;margin:8px 0"><span class="emoji">${t.icon}</span><span style="flex:1;min-width:0"><strong>${t.title}</strong><small>${t.time} · ${completed?'今日已完成':t.desc}</small></span><button class="btn secondary" style="width:auto;min-width:66px;margin:0;padding:8px 10px" onclick="setPage('${t.page}')">${completed?'再練習':'開始'}</button></div>`}).join('')}
+ ${dailyTasks.map(t=>{const completed=state.dailyDone.includes(t.id);return `<div class="tile" style="gap:10px;padding:12px 10px;margin:8px 0"><span class="emoji">${t.icon}</span><span style="flex:1;min-width:0"><strong>${t.title}</strong><small>${t.time} · ${completed?'今日已完成':t.desc}</small></span><button class="btn secondary" style="width:auto;min-width:66px;margin:0;padding:8px 10px" onclick="openDailyTask('${t.page}')">${completed?'再練習':'開始'}</button></div>`}).join('')}
  <div class="panel" style="padding:14px 16px"><b>記憶補給站</b><div class="muted">收藏 ${state.reviewItems.length} 張卡 · 到期 ${reviewDue().length} 張</div><button class="btn secondary" onclick="setPage('reviewPage')">查看收藏複習 →</button></div>
  <button class="btn secondary" onclick="setPage('map')">學習地圖</button>`;
  }
@@ -155,7 +156,7 @@ function render(){
  <div class="panel"><div style="font-size:52px;text-align:center">👧🏻 🌸 🐤</div><div class="muted">Kotori 小鎮・學校門口</div><div class="jp" style="font-size:23px">こんにちは！</div><b>Mika：</b><div class="muted">你好！你是新來的學生嗎？</div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><b>請選擇你的回答：</b>
  <div class="choices">${[['はい、そうです。','是的，沒錯。'],['いいえ、違います。','不，不是。']].map((a,i)=>`<button class="choice ${storyChoice===i+1?'selected':''}" onclick="storyChoice=${i+1};render()"><b>${a[0]}</b><div class="muted">${a[1]}</div></button>`).join('')}</div>
  ${storyChoice?'<div class="feedback">Mika：そうなんですね！<br>原來如此！你已經開始用日文回答問題了。</div>':''}</div>
- <button class="btn" ${storyChoice?'':'disabled'} onclick="state.storyDone=true;addReward('story',10,3);markDaily('story');setPage('map')">完成對話 +10 XP</button>`;
+ <button class="btn" ${storyChoice?'':'disabled'} onclick="state.storyDone=true;addReward('story',10,3);markDaily('story')">完成對話 +10 XP</button>`;
  else if(page==='comic')m.innerHTML=`
  <div class="eyebrow">MANGA LIBRARY</div><div class="h1">漫畫閱讀室 📚</div><span class="tag">初級原創短篇</span>
  <div class="panel"><b>第 1 話：はじめまして！</b><div class="comicline"><div style="font-size:30px">👧🏻 🌸 👧🏻</div><div class="muted">Mika 在學校門口遇見新朋友。</div></div><div class="jp" style="font-size:22px">${comics[state.comicIndex][0]}</div><div class="muted">${comics[state.comicIndex][1]}</div><hr style="border:0;border-top:1px solid var(--line)"><div class="muted">💡 ${comics[state.comicIndex][2]}</div></div>
@@ -202,9 +203,8 @@ function finishKanaQuiz(){
  const today=localDayKey();
  if(kanaQuiz.score>=7 && state.kanaQuizRewardDate!==today){state.xp+=10;state.coins+=3;state.kanaQuizRewardDate=today;kanaQuiz.rewarded=true;}
  else {kanaQuiz.rewarded=false;}
- // Completing the kana warm-up also completes its daily task, using the existing daily reward.
- if(!state.dailyDone.includes('kana')){state.dailyDone.push('kana');state.xp+=5;state.coins+=2;}
  save();
+ if(!state.chapterReturnKey){markDaily('kana');return;}
  render();
 }
 function renderKanaQuiz(m){
@@ -334,7 +334,7 @@ function finishVocabQuiz(){
  const today=localDayKey();
  if(vocabQuiz.score>=7 && state.vocabQuizRewardDate!==today){state.xp+=10;state.coins+=3;state.vocabQuizRewardDate=today;vocabQuiz.rewarded=true;}
  else vocabQuiz.rewarded=false;
- save();render();
+ save();if(!vocabQuiz.mistakesOnly&&!state.chapterReturnKey){markDaily('vocab');return;}render();
 }
 function renderVocabQuiz(m){
  if(vocabQuiz.finished){
