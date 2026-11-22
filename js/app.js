@@ -120,7 +120,10 @@ function getResumeChapter(){
    if(unlocked&&!state.chapterCompleted.includes(key))return {area,index,key,isResume:false};
   }
  }
- return null;
+ // If every chapter is already marked complete, keep the home learning entry available.
+ // Re-enter the first chapter without changing or resetting saved progress.
+ const area=learningAreas[0];
+ return {area,index:0,key:chapterKey(area.id,0),isResume:false};
 }
 function render(){
  const m=document.getElementById('main');
