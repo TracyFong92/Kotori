@@ -1,14 +1,11 @@
 
-const CACHE_NAME = 'kotori-academy-v28-8-smart-review-feedback';
+const CACHE_NAME = 'kotori-academy-v28-9-smart-review';
 
 const CORE_ASSETS = [
   './',
   './index.html',
   './css/app.css',
   './js/data/content.js',
-  './js/core/storage.js',
-  './js/features/forest.js',
-  './js/features/forest-learning.js',
   './js/app.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
