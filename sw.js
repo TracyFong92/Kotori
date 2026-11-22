@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'kotori-academy-v28-7-forest-learning1';
+const CACHE_NAME = 'kotori-academy-v28-8-smart-review-feedback';
 
 const CORE_ASSETS = [
   './',
