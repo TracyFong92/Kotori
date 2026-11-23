@@ -144,3 +144,17 @@ body.quiz-mode .page-back{top:calc(10px + env(safe-area-inset-top))}
 .resume-title{font-weight:800;font-size:14px;margin:10px 0 5px;line-height:1.45}
 .world-card{min-height:174px}
 @media(max-width:360px){.world-card{min-height:166px}}
+
+
+/* Kotori 2.9.3 — clearer world map area status */
+.world-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin-bottom:8px}
+.world-card-top .world-icon{margin:0}
+.world-status{display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.25;white-space:nowrap;background:rgba(255,255,255,.78);color:#78616a;border:1px solid rgba(130,100,115,.14)}
+.world-status.progress{background:#fff0d9;color:#8a5a1d;border-color:#f0d4a6}
+.world-status.ready{background:#e8f4e8;color:#39704a;border-color:#cfe5d0}
+.world-status.locked{background:#f0eeee;color:#81777b;border-color:#e2dcde}
+.world-status.complete{background:#e9e8f8;color:#5d5793;border-color:#d7d4ef}
+.world-card .world-count{display:flex;align-items:center;gap:6px;justify-content:space-between}
+.world-card .world-count b{font-size:11px;white-space:nowrap;color:inherit}
+.world-card-arrow{font-size:20px;line-height:1;margin-left:auto}
+
