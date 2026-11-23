@@ -60,6 +60,23 @@ function setPage(p){if(['kanaQuiz','vocabQuiz'].includes(page)&&p!==page&&state.
 function chapterKey(areaId,index){return areaId+':'+index}
 function areaById(id){return learningAreas.find(a=>a.id===id)||learningAreas[0]}
 function areaDoneCount(areaId){return [0,1,2].filter(i=>state.chapterCompleted.includes(chapterKey(areaId,i))).length}
+
+function areaMapStatus(area){
+ const total=area.chapters.length,done=areaDoneCount(area.id);
+ if(done>=total)return {label:'已完成',className:'complete',detail:'全部章節完成'};
+ for(let i=0;i<total;i++){
+  const key=chapterKey(area.id,i);
+  if(state.chapterVisited[key]&&!state.chapterCompleted.includes(key)){
+   return {label:'學習中',className:'progress',detail:`第 ${i+1} 章進行中`};
+  }
+ }
+ const next=area.chapters.findIndex((chapter,index)=>!state.chapterCompleted.includes(chapterKey(area.id,index)));
+ if(next===0)return {label:'尚未開始',className:'ready',detail:'第 1 章已解鎖'};
+ if(next>0&&state.chapterCompleted.includes(chapterKey(area.id,next-1))){
+  return {label:'已解鎖',className:'ready',detail:`第 ${next+1} 章已解鎖`};
+ }
+ return {label:'未解鎖',className:'locked',detail:`第 ${next+1} 章待解鎖`};
+}
 function openArea(areaId){state.selectedArea=areaId;save();setPage('area')}
 function openChapter(index){const a=areaById(state.selectedArea);if(index>0&&!state.chapterCompleted.includes(chapterKey(a.id,index-1)))return;state.currentChapter=index;const key=chapterKey(a.id,index);state.chapterReturnKey=key;state.chapterChallengeActive=key;state.chapterVisited[key]=state.chapterVisited[key]||{};state.chapterVisited[key].lesson=true;if(a.id==='kana'){kanaActivity='choose';kanaSelected=null;}save();setPage(a.lessonPage)}
 function openChapterActivity(kind){const a=areaById(state.selectedArea),idx=state.currentChapter,key=chapterKey(a.id,idx);state.chapterReturnKey=key;state.chapterChallengeActive=key;state.chapterVisited[key]=state.chapterVisited[key]||{};if(kind==='lesson'){state.chapterVisited[key].lesson=true;save();if(a.id==='kana')kanaActivity='choose';setPage(a.lessonPage);return;}startChapterQuiz()}
@@ -140,7 +157,8 @@ function render(){
  }
  else if(page==='map'){
  const totalDone=learningAreas.reduce((n,a)=>n+areaDoneCount(a.id),0);
- m.innerHTML=`<div class="eyebrow">KOTORI ACADEMY WORLD</div><div class="h1">學園世界地圖 🗺️</div><div class="world-intro"><div class="world-title">你的日語旅程，從這裏開始</div><div class="muted">探索六個學習區域，完成章節課程，逐步開啟新的學習路線。</div><div class="progress" style="margin-top:12px"><i style="width:${totalDone/18*100}%"></i></div><div class="muted" style="margin-top:6px">已完成 ${totalDone} / 18 個章節</div></div><div class="world-grid">${learningAreas.map(a=>{const done=areaDoneCount(a.id),next=a.chapters.findIndex((c,i)=>!state.chapterCompleted.includes(chapterKey(a.id,i)));return `<button class="world-card ${a.tone}" onclick="openArea('${a.id}')"><span class="world-icon">${a.icon}</span><strong>${a.name}</strong><small>${a.en}</small><span class="world-focus">${a.desc}</span><div class="world-progress"><i style="width:${done/3*100}%"></i></div><span class="world-count">${done}/3 章 · ${next<0?'全部完成':next===0?'尚未開始':'第 '+(next+1)+' 章待解鎖'}　›</span></button>`}).join('')}</div><div class="muted" style="text-align:center;margin:14px 0 4px">每個區域都有自己的章節進度，完成前一章即可解鎖下一章。🌱</div>`;
+ const totalChapters=learningAreas.reduce((n,a)=>n+a.chapters.length,0);
+ m.innerHTML=`<div class="eyebrow">KOTORI ACADEMY WORLD</div><div class="h1">學園世界地圖 🗺️</div><div class="world-intro"><div class="world-title">你的日語旅程，從這裏開始</div><div class="muted">探索六個學習區域，完成章節課程，逐步開啟新的學習路線。</div><div class="progress" style="margin-top:12px"><i style="width:${totalChapters?totalDone/totalChapters*100:0}%"></i></div><div class="muted" style="margin-top:6px">已完成 ${totalDone} / ${totalChapters} 個章節</div></div><div class="world-grid">${learningAreas.map(a=>{const done=areaDoneCount(a.id),status=areaMapStatus(a),total=a.chapters.length;return `<button class="world-card ${a.tone}" onclick="openArea('${a.id}')"><span class="world-card-top"><span class="world-icon">${a.icon}</span><span class="world-status ${status.className}">${status.label}</span></span><strong>${a.name}</strong><small>${a.en}</small><span class="world-focus">${a.desc}</span><div class="world-progress"><i style="width:${total?done/total*100:0}%"></i></div><span class="world-count"><span>${status.detail}</span><b>${done}/${total} 章</b><span class="world-card-arrow">›</span></span></button>`}).join('')}</div><div class="muted" style="text-align:center;margin:14px 0 4px">完成前一章即可解鎖下一章。每個區域的進度都會自動保存。🌱</div>`;
  }
  else if(page==='area')renderArea(m);
  else if(page==='chapter')renderChapter(m);
