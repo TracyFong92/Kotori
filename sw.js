@@ -1,11 +1,12 @@
 
-const CACHE_NAME = 'kotori-academy-v29-3-world-map';
+const CACHE_NAME = 'kotori-academy-v29-4-vocabulary-chapters';
 
 const CORE_ASSETS = [
   './',
   './index.html',
   './css/app.css',
   './js/data/content.js',
+  './js/data/vocab294.js',
   './js/app.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
