@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'kotori-academy-v29-4-vocabulary-chapters';
+const CACHE_NAME = 'kotori-academy-v29-5-kana-pronunciation';
 
 const CORE_ASSETS = [
   './',
