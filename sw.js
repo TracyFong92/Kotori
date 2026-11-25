@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'kotori-academy-v29-8-vocabulary-card-update';
+const CACHE_NAME = 'kotori-academy-v29-8-a2-card-layout-fix';
 
 const CORE_ASSETS = [
   './',
