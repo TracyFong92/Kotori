@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'kotori-academy-v29-8-b-review-challenge';
+const CACHE_NAME = 'kotori-academy-v29-8-c-pronunciation-tracker';
 
 const CORE_ASSETS = [
   './',
