@@ -46,7 +46,7 @@ const vocab25Cards=[
  {jp:'名前',reading:'なまえ',meaning:'名字',category:'動漫漫畫',example:'あなたの名前は何ですか。',exampleReading:'あなたの なまえは なんですか。',exampleMeaning:'你的名字是甚麼？'},
  {jp:'みんな',reading:'みんな',meaning:'大家；所有人',category:'動漫漫畫',example:'みんなで行きましょう。',exampleReading:'みんなで いきましょう。',exampleMeaning:'大家一起去吧。'},
  {jp:'一人',reading:'ひとり',meaning:'一個人',category:'動漫漫畫',example:'一人で学校へ行きます。',exampleReading:'ひとりで がっこうへ いきます。',exampleMeaning:'我一個人去學校。'},
- {jp:'何',reading:'なに／なん',meaning:'甚麼',category:'動漫漫畫',example:'これは何ですか。',exampleReading:'これは なんですか。',exampleMeaning:'這是甚麼？'},
+ {jp:'何',reading:'なに',meaning:'甚麼',category:'動漫漫畫',example:'これは何ですか。',exampleReading:'これは なんですか。',exampleMeaning:'這是甚麼？'},
  {jp:'どうして',reading:'どうして',meaning:'為甚麼',category:'動漫漫畫',example:'どうして笑っていますか。',exampleReading:'どうして わらっていますか。',exampleMeaning:'你為甚麼在笑？'},
  {jp:'ありがとう',reading:'ありがとう',meaning:'謝謝',category:'動漫漫畫',example:'助けてくれてありがとう。',exampleReading:'たすけてくれて ありがとう。',exampleMeaning:'謝謝你幫忙。'},
  {jp:'ごめん',reading:'ごめん',meaning:'對不起（較隨意）',category:'動漫漫畫',example:'遅れてごめん。',exampleReading:'おくれて ごめん。',exampleMeaning:'對不起，我遲到了。'},
