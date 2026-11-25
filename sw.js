@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'kotori-academy-v29-8-a2-card-layout-fix';
+const CACHE_NAME = 'kotori-academy-v29-8-b-review-challenge';
 
 const CORE_ASSETS = [
   './',
