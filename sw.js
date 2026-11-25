@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'kotori-academy-v29-6-nani-pronunciation';
+const CACHE_NAME = 'kotori-academy-v29-7-vocabulary-chapters';
 
 const CORE_ASSETS = [
   './',
@@ -7,6 +7,7 @@ const CORE_ASSETS = [
   './css/app.css',
   './js/data/content.js',
   './js/data/vocab294.js',
+  './js/data/vocab297.js',
   './js/app.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
