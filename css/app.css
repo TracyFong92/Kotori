@@ -158,3 +158,10 @@ body.quiz-mode .page-back{top:calc(10px + env(safe-area-inset-top))}
 .world-card .world-count b{font-size:11px;white-space:nowrap;color:inherit}
 .world-card-arrow{font-size:20px;line-height:1;margin-left:auto}
 
+
+/* Kotori 2.9.8: vocabulary card self-assessment and collapsible example */
+.card-self-check{display:flex;align-items:center;justify-content:flex-end;gap:7px;border-top:1px solid var(--line);padding-top:8px;margin-top:8px;font-size:11px;color:var(--muted)}
+.card-self-check button{border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);padding:7px 10px;font-size:12px;font-weight:700}
+.card-self-check button:active{background:#edf4ed}
+.example-speak{display:block;margin:8px auto 0;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font-size:12px}
+@media(max-width:360px){.card-self-check{gap:5px}.card-self-check button{padding:6px 8px}}
