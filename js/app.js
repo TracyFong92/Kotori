@@ -15,6 +15,8 @@ state.smartReview=state.smartReview&&typeof state.smartReview==='object'?state.s
 state.smartReviewLog=Array.isArray(state.smartReviewLog)?state.smartReviewLog:[];
 state.smartReviewRewardDate=state.smartReviewRewardDate||'';
 state.adaptiveLevel=Number.isInteger(state.adaptiveLevel)?Math.max(1,Math.min(4,state.adaptiveLevel)):1;
+// 2.9.8-C pronunciation self-check records; additive and backward-compatible.
+state.pronunciationChecks=state.pronunciationChecks&&typeof state.pronunciationChecks==='object'?state.pronunciationChecks:{};
 // 2.8.3 chapter data is additive; never replace existing learning records.
 state.chapterCompleted=Array.isArray(state.chapterCompleted)?state.chapterCompleted:[];
 state.chapterVisited=state.chapterVisited&&typeof state.chapterVisited==='object'?state.chapterVisited:{};
@@ -208,6 +210,7 @@ function render(){
  <div class="panel"><span class="tag">目前建議起點</span><div class="jp">N5</div><b>初級基礎</b><div class="muted">五十音、基本助詞、常用動詞、簡單句子、基礎閱讀及聽力。</div></div>
  <div class="panel"><span class="tag" style="background:#f1eaf2;color:#886c8e">下一階段</span><div class="jp">N4</div><b>初中級</b><div class="muted">動詞變化、較複雜句型、日常閱讀及聽力理解。</div></div>
  <div class="muted">正式課程會按 JLPT 能力範圍編排，並以練習結果決定何時進階。</div>`;
+ else if(page==='pronunciationCheck')renderPronunciationCheck(m);
  else if(page==='profile')m.innerHTML=`
  <div class="eyebrow">MY JOURNEY</div><div class="h1">我的學習紀錄 🌸</div>
  <div class="statgrid"><div class="statbox"><strong>${state.xp}</strong><span class="muted">累積 XP</span></div><div class="statbox"><strong>${state.coins}</strong><span class="muted">金幣</span></div><div class="statbox"><strong>${state.completed.length}</strong><span class="muted">完成任務</span></div><div class="statbox"><strong>25 分</strong><span class="muted">每日目標</span></div></div>
@@ -298,22 +301,64 @@ function assessVocabCard(wordId,known){
  smartRecord(word,!!known,'card-self-assessment');
  render();const next=document.getElementById('main');if(next)next.scrollTop=top;
 }
+
+function pronunciationStatus(word){
+ const item=state.pronunciationChecks[word.id];
+ return item&&item.status==='clear'?'clear':item&&item.status==='practice'?'practice':'new';
+}
+function setPronunciationStatus(wordId,status){
+ state.pronunciationChecks[wordId]={status,updatedAt:Date.now()};
+ save();render();
+}
+function renderPronunciationCheck(m){
+ const words=allKotoriWords();
+ const categories=['全部','日常生活','動漫漫畫','JLPT N5',...vocab294Chapters.map(chapter=>chapter.title)];
+ if(!state.pronunciationCategory)state.pronunciationCategory='全部';
+ const category=categories.includes(state.pronunciationCategory)?state.pronunciationCategory:'全部';
+ const selected=category==='全部'?words:words.filter(w=>vocabForestCategoryFor(w)===category);
+ const clear=selected.filter(w=>pronunciationStatus(w)==='clear').length;
+ const practice=selected.filter(w=>pronunciationStatus(w)==='practice').length;
+ const fresh=selected.length-clear-practice;
+ m.innerHTML=`<div class="eyebrow">PRONUNCIATION PRACTICE · 2.9.8-C</div>
+ <div class="h1">發音練習紀錄</div>
+ <div class="muted">先按喇叭聆聽日文，再跟讀一次。完成後由你自行標記目前的掌握情況；這不是自動語音評分。</div>
+ <div class="panel" style="margin:10px 0 14px">
+ <b>${category} · 發音進度</b>
+ <div class="statgrid">
+ <div class="statbox"><strong>${clear}</strong><span class="muted">已掌握</span></div>
+ <div class="statbox"><strong>${practice}</strong><span class="muted">需要再練</span></div>
+ <div class="statbox"><strong>${fresh}</strong><span class="muted">未檢查</span></div>
+ </div>
+ <div class="progress"><i style="width:${selected.length?clear/selected.length*100:0}%"></i></div>
+ <div class="muted">${selected.length?Math.round(clear/selected.length*100):0}% 已標記為掌握</div>
+ </div>
+ <div class="forest-categories">${categories.map(c=>`<button class="forest-category ${category===c?'active':''}" onclick="state.pronunciationCategory=${JSON.stringify(c)};save();render()">${c}</button>`).join('')}</div>
+ ${selected.map(w=>{const status=pronunciationStatus(w);return `<div class="tile" style="align-items:center;gap:8px">
+ <span style="flex:1;min-width:0"><strong>${w.jp}</strong><small>${w.reading} · ${w.meaning}</small><small>${status==='clear'?'已掌握':status==='practice'?'需要再練':'未檢查'}</small></span>
+ <button class="speak-btn" onclick='speakJapanese(${JSON.stringify(w.jp)},${JSON.stringify(w.reading)})' aria-label="播放日文發音">🔊</button>
+ <button class="speak-btn" onclick='setPronunciationStatus(${JSON.stringify(w.id)},"clear")' aria-label="標記已掌握">✓</button>
+ <button class="speak-btn" onclick='setPronunciationStatus(${JSON.stringify(w.id)},"practice")' aria-label="標記需要再練">↻</button>
+ </div>`}).join('')}
+ <div class="muted" style="margin:12px 2px">標記會保存在這部裝置的 Kotori 學習紀錄中。按 ✓ 表示目前讀音已熟悉；按 ↻ 可把單字留作之後再練。</div>
+ <button class="btn secondary" onclick="setPage('vocabPage')">返回單字森林</button>`;
+}
+
 function renderVocabForest(m){
  const categories=['日常生活','動漫漫畫','JLPT N5',...vocab294Chapters.map(chapter=>chapter.title)];
  const counts=Object.fromEntries(categories.map(c=>[c,vocabForestWords(c).length]));
  if(!categories.includes(vocabForestCategory))vocabForestCategory='日常生活';
  const active=vocabForestWords(vocabForestCategory);
- const due=active.filter(w=>{const x=smartStat(w);return x.attempts>0&&x.dueAt>0&&x.dueAt<=Date.now();}).length;
- const weak=active.filter(w=>{const x=smartStat(w);return x.attempts>0&&(x.wrongStreak>0||x.streak===0||smartAccuracy(x)<.6);}).length;
+ const due=active.filter(w=>{const x=smartStat(w);return x.dueAt>0&&x.dueAt<=Date.now();}).length;
+ const weak=active.filter(w=>{const x=smartStat(w);return x.attempts>0&&x.streak===0;}).length;
  const practiced=active.filter(w=>smartStat(w).attempts>0).length;
  const mastered=active.filter(w=>{const x=smartStat(w);return x.streak>=3&&x.correct>=4;}).length;
  m.innerHTML=`<div class="eyebrow">VOCABULARY FOREST · VERSION 2.9.8</div><div class="h1">單字森林 🌳</div>
  <div class="panel" style="margin:8px 0 12px"><div class="forest-hero-top"><b>🐤 今日單字進度</b><span class="tag">${practiced}/${active.length} 已練習</span></div><div class="progress" style="margin:9px 0 6px"><i style="width:${active.length?practiced/active.length*100:0}%"></i></div><div class="muted">本分類有 ${due} 個到期複習、${weak} 個需要加強、${mastered} 個已熟練。</div></div>
  <div class="forest-sticky"><div class="muted" style="font-weight:800;color:var(--ink)">先選擇想學習的分類</div><div class="forest-categories">${categories.map(c=>`<button class="forest-category ${vocabForestCategory===c?'active':''}" ${counts[c]===0?'disabled':''} onclick="vocabForestCategory='${c}';render()">${c}<small>${counts[c]} 個單字</small></button>`).join('')}</div>
- <button class="forest-start" onclick="startSmartReview(false,vocabForestCategory,true)" ${practiced?'':'disabled'}><span class="action-icon">✨</span><span>單字複習挑戰<small>${practiced?`${due} 個到期 · ${weak} 個待加強 · 從 ${practiced} 個已練習單字出題`:'先學習或自我評估一些單字，再開始挑戰'} · 最多 10 題</small></span><span style="margin-left:auto;font-size:20px">›</span></button>
+ <button class="forest-start" onclick="startSmartReview(false,vocabForestCategory)"><span class="action-icon">✨</span><span>智能複習＋測驗<small>${due?`${due} 個到期單字優先出題`:weak?`${weak} 個需要加強的單字優先出題`:'按記憶狀態安排本分類測驗'} · 約 10 題</small></span><span style="margin-left:auto;font-size:20px">›</span></button>
  <div class="forest-count">${vocabForestCategory} · ${active.length} 個單字 · ${practiced} 個已練習</div></div>
- ${active.length?active.map(w=>{const x=smartStat(w),newWord=vocab25Cards.find(z=>z.jp===w.jp),master=x.streak>=3&&x.correct>=4,open=!!vocabExampleOpen[w.id];return `<div class="word-card compact"><div class="word-top"><span class="tag">${vocabForestCategory}</span><span class="muted">${master?'🌟 已掌握':x.attempts?`答對 ${x.correct}/${x.attempts} 次`:'尚未練習'}</span></div><div class="jp">${w.jp}</div><div class="reading">${w.reading}</div><div class="muted" style="text-align:center">${w.meaning}</div><div class="word-buttons"><button class="speak-btn" onclick='speakJapanese(${JSON.stringify(w.jp)},${JSON.stringify(w.reading)})' aria-label="播放單字發音">🔊</button>${newWord?`<button class="speak-btn example-toggle ${open?'active':''}" onclick='toggleVocabExample(${JSON.stringify(w.id)})' aria-label="${open?'收起例句':'顯示例句'}" aria-expanded="${open}">文</button>`:''}<button class="speak-btn" onclick='addToReview("vocab",${JSON.stringify(w.jp)},${JSON.stringify(w.jp)},${JSON.stringify(w.reading)},${JSON.stringify(w.meaning)})' aria-label="加入複習">＋</button></div>${newWord&&open?`<div class="word-example"><b>${newWord.example}</b><div class="reading">${newWord.exampleReading}</div><div class="muted">${newWord.exampleMeaning}</div><button class="example-speak" onclick='speakJapanese(${JSON.stringify(newWord.example)},${JSON.stringify(newWord.exampleReading||'')})' aria-label="播放例句發音">🔊 播放例句</button></div>`:''}<div class="card-self-check"><span class="self-check-label">這個單字我：</span><button onclick='assessVocabCard(${JSON.stringify(w.id)},true)'>記得</button><button onclick='assessVocabCard(${JSON.stringify(w.id)},false)'>還不熟</button></div></div>`}).join(''):'<div class="panel muted">這個分類的單字尚未解鎖，完成前面的單字區域便會開放。🌱</div>'}
- <div class="forest-tools"><button class="tool-link" style="width:100%" onclick="setPage('reviewPage')">🔖 我的收藏／釘選單字（${state.reviewItems.length}）</button><details><summary>更多學習工具及紀錄</summary><div class="tool-links"><button class="tool-link" onclick="setPage('smartMistakes')">🎯 錯題挑戰</button><button class="tool-link" onclick="setPage('smartReport')">📊 每日報告</button><button class="tool-link" onclick="setPage('vocab25Stats')">🌟 單字成長紀錄</button><button class="tool-link" onclick="setPage('vocabMistakes')">📝 舊版錯題紀錄（${state.vocabMistakes.length}）</button><button class="tool-link" onclick="setPage('reviewPage')">🧠 記憶補給站</button></div></details></div>`;
+ ${active.length?active.map(w=>{const x=smartStat(w),newWord=vocab25Cards.find(z=>z.jp===w.jp),master=x.streak>=3&&x.correct>=4,open=!!vocabExampleOpen[w.id];return `<div class="word-card compact"><div class="word-top"><span class="tag">${vocabForestCategory}</span><span class="muted">${master?'🌟 已掌握':x.attempts?`答對 ${x.correct}/${x.attempts} 次`:'尚未練習'}</span></div><div class="jp">${w.jp}</div><div class="reading">${w.reading}</div><div class="muted" style="text-align:center">${w.meaning}</div><div class="word-buttons"><button class="speak-btn" onclick='speakJapanese(${JSON.stringify(w.jp)},${JSON.stringify(w.reading)})' aria-label="播放單字發音">🔊</button>${newWord?`<button class="speak-btn" onclick='toggleVocabExample(${JSON.stringify(w.id)})' aria-label="顯示或收起例句">文</button>`:''}<button class="speak-btn" onclick='addToReview("vocab",${JSON.stringify(w.jp)},${JSON.stringify(w.jp)},${JSON.stringify(w.reading)},${JSON.stringify(w.meaning)})' aria-label="加入複習">＋</button></div>${newWord&&open?`<div class="word-example"><b>${newWord.example}</b><div class="reading">${newWord.exampleReading}</div><div class="muted">${newWord.exampleMeaning}</div><button class="speak-btn example-speak" onclick='speakJapanese(${JSON.stringify(newWord.example)},${JSON.stringify(newWord.exampleReading||'')})' aria-label="播放例句發音">🔊 播放例句</button></div>`:''}<div class="card-self-check"><span>這個單字我：</span><button onclick='assessVocabCard(${JSON.stringify(w.id)},true)'>記得</button><button onclick='assessVocabCard(${JSON.stringify(w.id)},false)'>還不熟</button></div></div>`}).join(''):'<div class="panel muted">這個分類的單字尚未解鎖，完成前面的單字區域便會開放。🌱</div>'}
+ <div class="forest-tools"><button class="tool-link" style="width:100%" onclick="setPage('reviewPage')">🔖 我的收藏／釘選單字（${state.reviewItems.length}）</button><details><summary>更多學習工具及紀錄</summary><div class="tool-links"><button class="tool-link" onclick="setPage('smartMistakes')">🎯 錯題挑戰</button><button class="tool-link" onclick="setPage('smartReport')">📊 每日報告</button><button class="tool-link" onclick="setPage('pronunciationCheck')">🔊 發音練習紀錄</button><button class="tool-link" onclick="setPage('vocab25Stats')">🌟 單字成長紀錄</button><button class="tool-link" onclick="setPage('vocabMistakes')">📝 舊版錯題紀錄（${state.vocabMistakes.length}）</button><button class="tool-link" onclick="setPage('reviewPage')">🧠 記憶補給站</button></div></details></div>`;
 }
 function startVocab25Quiz(mode){
  const start=(state.vocab25Stage-1)*10;const pool=vocab25Cards.slice(start,state.vocab25Stage*10);
@@ -460,12 +505,9 @@ function smartRecord(word,correct,mode){
  save();
 }
 let smartQuiz={items:[],index:0,selected:-1,answered:false,score:0,finished:false,mode:'review'};
-function startSmartReview(mistakesOnly=false,categoryFilter='',learnedOnly=false){
+function startSmartReview(mistakesOnly=false,categoryFilter=''){
  const allWords=allKotoriWords();const words=categoryFilter?vocabForestWords(categoryFilter):allWords;const now=Date.now();
- const practicedWords=words.filter(w=>smartStat(w).attempts>0);
- if(learnedOnly&&practicedWords.length<4){alert(categoryFilter?`「${categoryFilter}」目前只有 ${practicedWords.length} 個已練習單字。請先學習或自我評估至少 4 個單字，再開始挑戰。`:`目前只有 ${practicedWords.length} 個已練習單字。請先學習或自我評估至少 4 個單字，再開始挑戰。`);return;}
- let pool=mistakesOnly?practicedWords.filter(w=>{const x=smartStat(w);return x.wrongStreak>0||x.streak===0||smartAccuracy(x)<.6;}):learnedOnly?practicedWords.filter(w=>{const x=smartStat(w);return (x.dueAt>0&&x.dueAt<=now)||x.streak<3||smartAccuracy(x)<.85;}):words.filter(w=>{const x=smartStat(w);return (x.dueAt>0&&x.dueAt<=now)||x.attempts===0||x.streak<3||smartAccuracy(x)<.75;});
- if(!pool.length&&learnedOnly)pool=practicedWords;
+ let pool=mistakesOnly?words.filter(w=>{const x=smartStat(w);return x.attempts>0&&(x.wrongStreak>0||x.streak===0||smartAccuracy(x)<.6);}):words.filter(w=>{const x=smartStat(w);return (x.dueAt>0&&x.dueAt<=now)||x.attempts===0||x.streak<3||smartAccuracy(x)<.75;});
  if(!pool.length&&!mistakesOnly)pool=words.filter(w=>smartStat(w).attempts===0);
  if(!pool.length)pool=words.filter(w=>smartStat(w).streak<3);
  if(!pool.length){alert(categoryFilter?`「${categoryFilter}」目前沒有需要複習的單字。`:`太好了！目前 ${words.length} 個單字都已達到熟練標準。`);return;}
@@ -474,7 +516,7 @@ function startSmartReview(mistakesOnly=false,categoryFilter='',learnedOnly=false
  const topBand=pool.slice(0,Math.min(pool.length,20));
  const chosen=shuffleArray(topBand).slice(0,Math.min(10,topBand.length));
  // Standard sessions reserve up to two slots for general practice, not only urgent cards.
- if(!mistakesOnly&&!learnedOnly&&chosen.length>=5){
+ if(!mistakesOnly&&chosen.length>=5){
   const chosenIds=new Set(chosen.map(w=>w.id));
   const general=shuffleArray(words.filter(w=>{const x=smartStat(w);return !chosenIds.has(w.id)&&(!x.lastAt||(now-x.lastAt)>=3*86400000)&&!(x.dueAt>0&&x.dueAt<=now);})).slice(0,2);
   chosen.splice(Math.max(0,chosen.length-general.length),general.length,...general);
@@ -482,22 +524,22 @@ function startSmartReview(mistakesOnly=false,categoryFilter='',learnedOnly=false
  smartQuiz={items:chosen.map(w=>{
   const x=smartStat(w),acc=smartAccuracy(x);let mode=state.adaptiveLevel;
   if(x.attempts>=3&&acc<.6)mode=1;else if(x.attempts>=3&&acc>=.85)mode=Math.min(4,Math.max(mode,3));
-  const all=words.filter(o=>o.id!==w.id&&(!learnedOnly||smartStat(o).attempts>0));let correct,opts;
+  const all=words.filter(o=>o.id!==w.id);let correct,opts;
   if(mode===1){correct=w.meaning;opts=shuffleArray([correct,...shuffleArray(all.filter(o=>o.meaning!==correct)).slice(0,3).map(o=>o.meaning)]);}
   else if(mode===2){correct=w.jp;opts=shuffleArray([correct,...shuffleArray(all.filter(o=>o.jp!==correct)).slice(0,3).map(o=>o.jp)]);}
   else if(mode===3){correct=w.jp;opts=shuffleArray([correct,...shuffleArray(all.filter(o=>o.jp!==correct)).slice(0,3).map(o=>o.jp)]);}
   else{correct=w.exampleMeaning||w.meaning;opts=shuffleArray([correct,...shuffleArray(all.filter(o=>(o.exampleMeaning||o.meaning)!==correct)).slice(0,3).map(o=>o.exampleMeaning||o.meaning)]);}
   return {word:w,mode,opts,answer:opts.indexOf(correct)};
- }),index:0,selected:-1,answered:false,score:0,finished:false,mode:mistakesOnly?'mistakes':learnedOnly?'challenge':'review',category:categoryFilter,learnedOnly};
+ }),index:0,selected:-1,answered:false,score:0,finished:false,mode:mistakesOnly?'mistakes':'review',category:categoryFilter};
  setPage('smartReview');
 }
 function answerSmartReview(i){if(smartQuiz.answered)return;const q=smartQuiz.items[smartQuiz.index];smartQuiz.selected=i;smartQuiz.answered=true;const ok=i===q.answer;if(ok)smartQuiz.score++;smartRecord(q.word,ok,'level'+q.mode);render();}
 function nextSmartReview(){smartQuiz.index++;smartQuiz.selected=-1;smartQuiz.answered=false;if(smartQuiz.index>=smartQuiz.items.length){smartQuiz.finished=true;const today=localDayKey();if(smartQuiz.score>=Math.ceil(smartQuiz.items.length*.7)&&state.smartReviewRewardDate!==today){state.xp+=5;state.coins+=2;state.smartReviewRewardDate=today;smartQuiz.rewarded=true;save();}else smartQuiz.rewarded=false;render();}else render();}
 function renderSmartReview(m){
- if(smartQuiz.finished){m.innerHTML=`<div class="eyebrow">KOTORI 2.6 · SMART REVIEW</div><div class="h1">${smartQuiz.mode==='challenge'?'單字複習挑戰完成！':'智能複習完成！'} ✨</div><div class="panel" style="text-align:center"><div style="font-size:46px">${smartQuiz.score>=Math.ceil(smartQuiz.items.length*.7)?'🏆':'🌱'}</div><div class="jp">${smartQuiz.score} / ${smartQuiz.items.length}</div><b>${smartQuiz.score>=Math.ceil(smartQuiz.items.length*.7)?'よくできました！做得很好！':'再練習一次就會更熟悉！'}</b><div class="muted">每個單字的熟練度及下次複習時間已更新。${smartQuiz.category?`本次完成「${smartQuiz.category}」分類。`:""}</div></div>${smartQuiz.rewarded?'<div class="feedback">🎁 獲得 +5 XP 及 +2 金幣！</div>':''}<button class="btn" onclick="startSmartReview(false,smartQuiz.category||'',smartQuiz.learnedOnly)">${smartQuiz.mode==='challenge'?'再挑戰一次':'再做一輪智能複習'}</button><button class="btn secondary" onclick="setPage('smartReport')">查看學習報告</button><button class="btn secondary" onclick="vocabForestCategory=smartQuiz.category||vocabForestCategory;setPage('vocabPage')">返回單字森林</button>`;return;}
+ if(smartQuiz.finished){m.innerHTML=`<div class="eyebrow">KOTORI 2.6 · SMART REVIEW</div><div class="h1">智能複習完成！✨</div><div class="panel" style="text-align:center"><div style="font-size:46px">${smartQuiz.score>=7?'🏆':'🌱'}</div><div class="jp">${smartQuiz.score} / ${smartQuiz.items.length}</div><b>${smartQuiz.score>=7?'よくできました！做得很好！':'再練習一次就會更熟悉！'}</b><div class="muted">每個單字的熟練度及下次複習時間已更新。${smartQuiz.category?`本次完成「${smartQuiz.category}」分類。`:""}</div></div>${smartQuiz.rewarded?'<div class="feedback">🎁 獲得 +5 XP 及 +2 金幣！</div>':''}<button class="btn" onclick="startSmartReview(false,smartQuiz.category||'')">再做一輪智能複習</button><button class="btn secondary" onclick="setPage('smartReport')">查看學習報告</button><button class="btn secondary" onclick="vocabForestCategory=smartQuiz.category||vocabForestCategory;setPage('vocabPage')">返回單字森林</button>`;return;}
  if(!smartQuiz.items.length){const due=smartDueWords().length,all=allKotoriWords(),fresh=all.filter(w=>smartStat(w).attempts===0).length;m.innerHTML=`<div class="eyebrow">KOTORI 2.6 · SMART REVIEW</div><div class="h1">智能複習室 🧠</div><div class="panel"><b>今天的記憶狀態</b><div class="statgrid"><div class="statbox"><strong>${due}</strong><span class="muted">到期複習</span></div><div class="statbox"><strong>${fresh}</strong><span class="muted">尚未練習</span></div></div><div class="muted">系統會優先安排到期及較不熟悉的單字，並按近期表現調整題型。</div></div><button class="btn" onclick="startSmartReview(false)">開始智能複習</button><button class="btn secondary" onclick="startSmartReview(true)">只練習需要加強的單字</button><button class="btn secondary" onclick="setPage('smartReport')">查看全部單字的熟練度</button><button class="btn secondary" onclick="setPage('vocabPage')">返回單字森林</button>`;return;}
  const q=smartQuiz.items[smartQuiz.index],prompt=q.mode===1?q.word.jp:q.mode===2?q.word.meaning:q.mode===3?'請聽讀音並選出單字':(q.word.example||q.word.jp);
- m.innerHTML=`<div class="eyebrow">SMART REVIEW · ${smartQuiz.index+1} / ${smartQuiz.items.length}</div><div class="h1">${smartQuiz.mode==='challenge'?'單字複習挑戰':'智能複習'} 🧠</div><div class="muted">目前自動難度：Level ${q.mode}　·　答對 ${smartQuiz.score} 題</div><div class="progress"><i style="width:${smartQuiz.index/smartQuiz.items.length*100}%"></i></div><div class="panel" style="text-align:center;padding:22px"><div class="muted">${q.mode===1?'這個日文單字是甚麼意思？':q.mode===2?'請選出對應的日文單字':q.mode===3?'聆聽讀音，再選出單字':'選出正確的中文意思'}</div>${q.mode===3?`<button class="speak-btn" style="width:58px;height:58px;font-size:25px;margin:14px" onclick="speakJapanese(smartQuiz.items[smartQuiz.index].word.jp,smartQuiz.items[smartQuiz.index].word.reading)">🔊</button>`:`<div class="jp" style="font-size:${q.mode===4?'23':'32'}px;margin:15px 0">${prompt}</div>${q.mode===4?`<div class="reading">${q.word.exampleReading||q.word.reading}</div>`:''}`}</div><div class="choices">${q.opts.map((o,i)=>`<button class="choice ${smartQuiz.answered&&i===q.answer?'correct':''} ${smartQuiz.answered&&i===smartQuiz.selected&&i!==q.answer?'wrong':''}" ${smartQuiz.answered?'disabled':''} onclick="answerSmartReview(${i})">${'ABCD'[i]}. ${o}</button>`).join('')}</div>${smartQuiz.answered?`<div class="feedback ${smartQuiz.selected===q.answer?'':'bad'}"><b>${smartQuiz.selected===q.answer?'🎉 正確！':'再記住這個單字！'}</b><br>${q.word.jp}（${q.word.reading}）＝${q.word.meaning}${q.word.example?`<br>${q.word.example}<br>${q.word.exampleMeaning}`:''}</div><button class="btn" onclick="nextSmartReview()">${smartQuiz.index===smartQuiz.items.length-1?'查看結果':'下一題 →'}</button>`:''}`;
+ m.innerHTML=`<div class="eyebrow">SMART REVIEW · ${smartQuiz.index+1} / ${smartQuiz.items.length}</div><div class="h1">智能複習 🧠</div><div class="muted">目前自動難度：Level ${q.mode}　·　答對 ${smartQuiz.score} 題</div><div class="progress"><i style="width:${smartQuiz.index/smartQuiz.items.length*100}%"></i></div><div class="panel" style="text-align:center;padding:22px"><div class="muted">${q.mode===1?'這個日文單字是甚麼意思？':q.mode===2?'請選出對應的日文單字':q.mode===3?'聆聽讀音，再選出單字':'選出正確的中文意思'}</div>${q.mode===3?`<button class="speak-btn" style="width:58px;height:58px;font-size:25px;margin:14px" onclick="speakJapanese(smartQuiz.items[smartQuiz.index].word.jp,smartQuiz.items[smartQuiz.index].word.reading)">🔊</button>`:`<div class="jp" style="font-size:${q.mode===4?'23':'32'}px;margin:15px 0">${prompt}</div>${q.mode===4?`<div class="reading">${q.word.exampleReading||q.word.reading}</div>`:''}`}</div><div class="choices">${q.opts.map((o,i)=>`<button class="choice ${smartQuiz.answered&&i===q.answer?'correct':''} ${smartQuiz.answered&&i===smartQuiz.selected&&i!==q.answer?'wrong':''}" ${smartQuiz.answered?'disabled':''} onclick="answerSmartReview(${i})">${'ABCD'[i]}. ${o}</button>`).join('')}</div>${smartQuiz.answered?`<div class="feedback ${smartQuiz.selected===q.answer?'':'bad'}"><b>${smartQuiz.selected===q.answer?'🎉 正確！':'再記住這個單字！'}</b><br>${q.word.jp}（${q.word.reading}）＝${q.word.meaning}${q.word.example?`<br>${q.word.example}<br>${q.word.exampleMeaning}`:''}</div><button class="btn" onclick="nextSmartReview()">${smartQuiz.index===smartQuiz.items.length-1?'查看結果':'下一題 →'}</button>`:''}`;
 }
 function renderSmartReport(m){
  const words=allKotoriWords(),stats=words.map(w=>({w,x:smartStat(w)})),mastered=stats.filter(a=>a.x.streak>=3&&a.x.correct>=4).length,learning=stats.filter(a=>a.x.attempts>0&&!(a.x.streak>=3&&a.x.correct>=4)).length,unseen=words.length-mastered-learning,due=smartDueWords().length,attempts=stats.reduce((n,a)=>n+a.x.attempts,0),correct=stats.reduce((n,a)=>n+a.x.correct,0),accuracy=attempts?Math.round(correct/attempts*100):0,today=localDayKey(),todayLog=state.smartReviewLog.filter(x=>{const d=new Date(x.at);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')===today;}),todayCorrect=todayLog.filter(x=>x.correct).length,todayRate=todayLog.length?Math.round(todayCorrect/todayLog.length*100):0;
